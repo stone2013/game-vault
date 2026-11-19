@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>💥 坦克坦克！</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Inter:wght@500;700;900&display=swap');
+    * { box-sizing: border-box; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+    html, body {
+      margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
+      background: #e9ecf2; font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+    .cartoon-font { font-family: 'Fredoka', 'Inter', sans-serif; }
+    .outline-text {
+      text-shadow:
+        -2px -2px 0 #111827,  2px -2px 0 #111827,
+        -2px  2px 0 #111827,  2px  2px 0 #111827,
+         0px  3px 0 #111827;
+    }
+    .outline-text-sm {
+      text-shadow:
+        -1.5px -1.5px 0 #111827,  1.5px -1.5px 0 #111827,
+        -1.5px  1.5px 0 #111827,  1.5px  1.5px 0 #111827;
+    }
+    .rbx-card {
+      background: rgba(255, 255, 255, 0.94);
+      border: 3px solid #1e293b;
+      box-shadow: 0 6px 0 #1e293b;
+      border-radius: 16px;
+    }
+    .rbx-btn {
+      border: 2.5px solid #1e293b;
+      box-shadow: 0 4px 0 #1e293b;
+      transition: transform 0.08s ease, box-shadow 0.08s ease;
+    }
+    .rbx-btn:active:not(:disabled) {
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 #1e293b;
+    }
+    .rbx-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+    .rbx-tile-gold {
+      background: linear-gradient(180deg, #fde047 0%, #f59e0b 100%);
+      border: 2.5px solid #0f172a;
+      box-shadow: 0 3px 0 #0f172a, inset 0 2px 0 rgba(255,255,255,0.65);
+    }
+    .rbx-tile-blue {
+      background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%);
+      border: 2.5px solid #0f172a;
+      box-shadow: 0 3px 0 #0f172a, inset 0 2px 0 rgba(255,255,255,0.55);
+    }
+    .rbx-pill-blue {
+      background: linear-gradient(180deg, #38bdf8 0%, #2563eb 100%);
+      border: 2.5px solid #0f172a;
+      box-shadow: 0 3px 0 #0f172a, inset 0 1.5px 0 rgba(255,255,255,0.5);
+    }
+    .rbx-xp-frame {
+      background: repeating-conic-gradient(#f8fafc 0% 25%, #e2e8f0 0% 50%) 50% / 14px 14px;
+      border: 3px solid #6b471e;
+      box-shadow: 0 3px 0 rgba(15,23,42,0.4), inset 0 2px 4px rgba(15,23,42,0.2);
+    }
+    .rbx-tile-shop {
+      background: repeating-conic-gradient(#fde047 0deg 18deg, #f59e0b 18deg 36deg);
+      border: 2.5px solid #0f172a;
+      box-shadow: 0 3px 0 #0f172a, inset 0 2px 0 rgba(255,255,255,0.65);
+    }
+    .rbx-stat-bar {
+      position: relative;
+      border: 2.5px solid #0f172a;
+      box-shadow: 0 3px 0 #0f172a, inset 0 2px 0 rgba(255,255,255,0.42);
+      background-image: repeating-conic-gradient(rgba(255,255,255,0.12) 0% 25%, transparent 0% 50%);
+      background-size: 16px 16px;
+    }
+    .rbx-stat-valbox {
+      border: 2.5px solid #0f172a;
+      box-shadow: 0 3px 0 #0f172a, inset 0 2px 0 rgba(255,255,255,0.4);
+    }
+    .menu-btn-gold {
+      background: linear-gradient(180deg, #fde047 0%, #facc15 55%, #f59e0b 100%);
+      border: 3.5px solid #0f172a;
+      box-shadow: 0 6px 0 #0f172a, inset 0 3px 0 rgba(255,255,255,0.72);
+    }
+    .menu-btn-blue {
+      background: linear-gradient(180deg, #60a5fa 0%, #38bdf8 55%, #0284c7 100%);
+      border: 3px solid #0f172a;
+      box-shadow: 0 5px 0 #0f172a, inset 0 2.5px 0 rgba(255,255,255,0.6);
+    }
+    .menu-btn-purple {
+      background: linear-gradient(180deg, #a78bfa 0%, #7c3aed 100%);
+      border: 3px solid #0f172a;
+      box-shadow: 0 5px 0 #0f172a, inset 0 2.5px 0 rgba(255,255,255,0.5);
+    }
+    .menu-btn-green {
+      background: linear-gradient(180deg, #34d399 0%, #10b981 100%);
+      border: 3px solid #0f172a;
+      box-shadow: 0 5px 0 #0f172a, inset 0 2.5px 0 rgba(255,255,255,0.5);
+    }
+    .menu-btn-press:active {
+      transform: translateY(4px);
+      box-shadow: 0 1px 0 #0f172a;
+    }
+    .hero-title-stroke {
+      text-shadow:
+        -3px -3px 0 #0f172a,  3px -3px 0 #0f172a,
+        -3px  3px 0 #0f172a,  3px  3px 0 #0f172a,
+         0px  5px 0 #0f172a;
+    }
+    #glContainer {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+    }
+    #gameCanvas {
+      position: fixed;
+      inset: 0;
+      display: block;
+      width: 100vw;
+      height: 100vh;
+      z-index: 1;
+      touch-action: none;
+      cursor: crosshair;
+    }
+    @keyframes streakPop {
+      0%   { transform: translate(-50%, -18px) scale(0.55); opacity: 0; }
+      22%  { transform: translate(-50%, 0px) scale(1.16); opacity: 1; }
+      40%  { transform: translate(-50%, 0px) scale(1.0); opacity: 1; }
+      82%  { transform: translate(-50%, 0px) scale(1.0); opacity: 1; }
+      100% { transform: translate(-50%, -12px) scale(0.92); opacity: 0; }
+    }
+    .streak-anim {
+      animation: streakPop 2.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+    /* Hide scrollbars inside modals */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* ================= MOBILE LANDSCAPE ADAPTATION (Short Widescreen Phones) ================= */
+    @media (max-height: 520px) and (orientation: landscape) {
+      #hudLayer, #lobbyModal {
+        padding-top: 6px !important;
+        padding-bottom: max(6px, env(safe-area-inset-bottom)) !important;
+        padding-left: max(10px, env(safe-area-inset-left)) !important;
+        padding-right: max(10px, env(safe-area-inset-right)) !important;
+      }
+
+      /* Main Menu Landscape Compacting */
+      #lobbyHeroWrap {
+        margin-top: 0 !important;
+      }
+      #lobbyHeroSvg {
+        width: 112px !important;
+        height: 28px !important;
+        margin-bottom: -10px !important;
+      }
+      #lobbyHeroTitle {
+        font-size: 1.75rem !important;
+        line-height: 1.05 !important;
+      }
+      #lobbyHeroBadge {
+        margin-top: 2px !important;
+        padding: 1px 10px !important;
+        font-size: 10px !important;
+      }
+      #lobbyCenterStage {
+        min-height: 56px !important;
+      }
+      #lobbyBottomBar {
+        max-width: 100% !important;
+        padding-bottom: 2px !important;
+        gap: 10px !important;
+      }
+      #lobbyLeftDock, #lobbyRightDock {
+        flex-direction: row !important;
+        gap: 6px !important;
+      }
+      #lobbyLeftDock button, #lobbyRightDock button {
+        width: 46px !important;
+        height: 46px !important;
+        border-radius: 12px !important;
+      }
+      #lobbyLeftDock button svg, #lobbyRightDock button svg {
+        width: 20px !important;
+        height: 20px !important;
+      }
+      #lobbyCenterCta {
+        max-width: 390px !important;
+        gap: 6px !important;
+      }
+      #btnPlay {
+        padding-top: 6px !important;
+        padding-bottom: 6px !important;
+      }
+      #btnPlay span {
+        font-size: 1.25rem !important;
+      }
+      #btnPlay svg {
+        width: 20px !important;
+        height: 20px !important;
+      }
+      #lobbySubActions {
+        display: grid !important;
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        gap: 6px !important;
+      }
+      .landscape-col-1 {
+        grid-column: span 1 / span 1 !important;
+      }
+      #btnOpenModeModal, #btnOpenGarage, #btnLobbyIndex {
+        padding: 6px 6px !important;
+        border-radius: 12px !important;
+        gap: 4px !important;
+      }
+      #btnOpenModeModal span, #btnOpenGarage span, #btnLobbyIndex span {
+        font-size: 11px !important;
+      }
+      #btnOpenModeModal svg, #btnOpenGarage svg, #btnLobbyIndex svg {
+        width: 16px !important;
+        height: 16px !important;
+      }
+
+      /* In-Game HUD Landscape Compacting */
+      #hudLeftDock {
+        gap: 4px !important;
+      }
+      #hudLeftDock > button {
+        width: 40px !important;
+        height: 40px !important;
+        border-radius: 12px !important;
+      }
+      #hudLeftDock > button svg {
+        width: 19px !important;
+        height: 19px !important;
+      }
+      #hudLeftDock > button span {
+        font-size: 9px !important;
+      }
+      #hudRightDock {
+        gap: 4px !important;
+      }
+      #hudRightDock #btnCodes, #hudRightDock #btnBadges {
+        width: 38px !important;
+        height: 38px !important;
+        border-radius: 11px !important;
+      }
+      #hudRightDock #btnCodes svg, #hudRightDock #btnBadges svg {
+        width: 17px !important;
+        height: 17px !important;
+      }
+      #hudRightDock #btnRightLevel, #hudRightDock #btnQuickXpBoost {
+        width: 82px !important;
+        padding-top: 2px !important;
+        padding-bottom: 2px !important;
+      }
+      #statsDrawer {
+        width: 390px !important;
+        margin-top: 4px !important;
+      }
+      #statsRows {
+        gap: 4px !important;
+      }
+      #statsRows .rbx-stat-bar {
+        padding-top: 2px !important;
+        padding-bottom: 2px !important;
+      }
+      #hudActionCluster {
+        align-items: center !important;
+      }
+      #btnBurstFire {
+        width: 48px !important;
+        height: 48px !important;
+      }
+      #btnBurstFire svg {
+        width: 30px !important;
+        height: 30px !important;
+      }
+      #hudActionSubCol {
+        flex-direction: row !important;
+        gap: 6px !important;
+      }
+      #btnFlip180, #btnCamToggle, #btnAutoFire {
+        width: 34px !important;
+        height: 34px !important;
+      }
+      #leaderboardCard {
+        width: 132px !important;
+      }
+      .rbx-card {
+        max-height: 92vh !important;
+        overflow-y: auto !important;
+      }
+    }
+  </style>
+</head>
+<body class="relative w-screen h-screen overflow-hidden">
+
+  <!-- Three.js 3D Cartoon WebGL Container -->
+  <div id="glContainer"></div>
+  <!-- Transparent 2D Overlay Canvas (Nameplates, Health Bars, Minimap, Joysticks & Pointer Input) -->
+  <canvas id="gameCanvas"></canvas>
+
+  <!-- ================= HUD LAYER (Authentic Full-SVG Vector UI) ================= -->
+  <div id="hudLayer" class="hidden pointer-events-none fixed inset-0 z-10 flex flex-col justify-between p-2 sm:p-3.5">
+
+    <!-- 1. TOP ROW: Safe Left Space | [Evo Chevrons] [Star XP Bar + 等级] [Green Upgrade Chevrons] | Slim Leaderboard -->
+    <div class="flex items-start justify-between gap-1.5 w-full pt-0.5">
+
+      <!-- Left Spacer (keeps top-left clear of host/close buttons) -->
+      <div class="w-8 sm:w-28 shrink-0 flex items-center pl-8 sm:pl-0">
+        <div id="modeBadge" class="hidden md:inline-block bg-slate-900/75 text-white border border-slate-800 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold tracking-wide">
+          NORMAL
+        </div>
+      </div>
+
+      <!-- Top-Center: Exact Reference Top Cluster (Red Evo Tile + Star XP Bar + Green Stat Tile + Drop-down 2x4 Grid) -->
+      <div class="pointer-events-auto relative flex flex-col items-center flex-1 max-w-[290px] sm:max-w-[430px] mx-auto">
+
+        <div class="flex items-center justify-center gap-1.5 sm:gap-2 w-full">
+          <!-- Left Red Double-Chevron Evolution Button -->
+          <button id="btnToggleEvo" type="button" title="坦克进化分支" class="rbx-tile-blue active:translate-y-0.5 w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center relative shrink-0">
+            <svg viewBox="0 0 28 28" class="w-5 h-5 sm:w-6 sm:h-6"><path d="M6 7l8 6 8-6v5l-8 6-8-6z" fill="#f43f5e" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/><path d="M6 14l8 6 8-6v5l-8 6-8-6z" fill="#e11d48" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/></svg>
+            <span id="evoCountBadge" class="hidden min-w-[18px] h-[18px] px-1 rounded-full bg-rose-600 border-2 border-slate-900 text-white text-[9px] font-black flex items-center justify-center absolute -bottom-1.5 -left-1.5">1</span>
+          </button>
+
+          <!-- Center Star-Flanked Checkered XP Bar -->
+          <div class="flex-1 flex items-center min-w-[130px] sm:min-w-[220px]">
+            <span class="z-10 -mr-2.5"><svg viewBox="0 0 32 32" class="w-6 h-6 sm:w-7 sm:h-7 shrink-0 drop-shadow-[0_2px_0_#0f172a]"><path d="M16 2.5l4.1 8.4 9.2 1.3-6.7 6.5 1.6 9.2L16 23.5l-8.2 4.4 1.6-9.2-6.7-6.5 9.2-1.3z" fill="#fbbf24" stroke="#0f172a" stroke-width="2.4" stroke-linejoin="round"/><path d="M16 5.5l2.7 5.6 6.1.9-4.4 4.3" fill="none" stroke="#fef08a" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+            <div class="flex-1 h-6 sm:h-7 rbx-xp-frame rounded-lg overflow-hidden relative">
+              <div id="xpFill" class="h-full bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 transition-all duration-150" style="width: 0%;"></div>
+              <div class="absolute inset-0 flex items-center justify-center text-[11px] sm:text-xs font-black text-white outline-text-sm tracking-tight">
+                <span id="xpText">0 / 85</span>
+              </div>
+            </div>
+            <span class="z-10 -ml-2.5"><svg viewBox="0 0 32 32" class="w-6 h-6 sm:w-7 sm:h-7 shrink-0 drop-shadow-[0_2px_0_#0f172a]"><path d="M16 2.5l4.1 8.4 9.2 1.3-6.7 6.5 1.6 9.2L16 23.5l-8.2 4.4 1.6-9.2-6.7-6.5 9.2-1.3z" fill="#fbbf24" stroke="#0f172a" stroke-width="2.4" stroke-linejoin="round"/><path d="M16 5.5l2.7 5.6 6.1.9-4.4 4.3" fill="none" stroke="#fef08a" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+          </div>
+
+          <!-- Right Green Double-Chevron Stat Upgrades Button -->
+          <button id="btnToggleStats" type="button" title="属性加点面板" class="rbx-tile-blue active:translate-y-0.5 w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center relative shrink-0">
+            <svg viewBox="0 0 28 28" class="w-5 h-5 sm:w-6 sm:h-6"><path d="M6 21l8-6 8 6v-5l-8-6-8 6z" fill="#22c55e" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/><path d="M6 14l8-6 8 6v-5l-8-6-8 6z" fill="#4ade80" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/></svg>
+            <span id="statPointsBadge" class="hidden min-w-[18px] h-[18px] px-1 rounded-full bg-rose-600 border-2 border-slate-900 text-white text-[9px] font-black flex items-center justify-center absolute -bottom-1.5 -right-1.5">0</span>
+          </button>
+        </div>
+
+        <!-- Level + Class Label & Boss Countdown directly beneath XP bar -->
+        <div class="flex items-center justify-center gap-2 mt-0.5 pointer-events-none">
+          <span id="topLvlLabel" class="cartoon-font outline-text-sm text-amber-300 font-black text-xs sm:text-sm">等级 1</span>
+          <span id="tankClassLabel" class="outline-text-sm text-white font-black text-[10px] sm:text-xs">Basic Tank</span>
+          <span id="secretTag" class="hidden bg-gradient-to-r from-fuchsia-500 to-amber-400 text-slate-950 font-black text-[9px] px-1.5 rounded-full border border-slate-900">SECRET</span>
+          <span id="bossCountdownBadge" class="bg-slate-900/80 text-amber-300 border border-slate-800 px-1.5 py-0.2 rounded-full text-[9px] sm:text-[10px] font-black flex items-center gap-1">
+            <svg viewBox="0 0 24 24" class="w-3.5 h-3.5 inline-block shrink-0"><path d="M12 3a8 8 0 00-8 8c0 3 1.5 5 3 6v3h10v-3c1.5-1 3-3 3-6a8 8 0 00-8-8z" fill="#c084fc" stroke="#0f172a" stroke-width="2"/><circle cx="9" cy="11" r="1.8" fill="#0f172a"/><circle cx="15" cy="11" r="1.8" fill="#0f172a"/></svg><span id="bossTimerText">25s</span>
+          </span>
+        </div>
+
+        <div id="rvbScoreBar" class="hidden mt-0.5 flex items-center gap-1.5 bg-slate-900/85 border border-slate-700 rounded-full px-2.5 py-0.5 text-[10px] font-black text-white">
+          <span class="text-rose-400">RED <span id="redScoreText">0</span></span>
+          <span class="text-slate-400">:</span>
+          <span class="text-sky-400"><span id="blueScoreText">0</span> BLUE</span>
+        </div>
+
+        <!-- Active Boss HP Bar -->
+        <div id="bossHpPanel" class="hidden mt-1 w-48 sm:w-64 bg-slate-950/90 border-2 border-rose-500 rounded-xl p-1 shadow-lg">
+          <div class="flex items-center justify-between text-[9px] sm:text-[10px] font-black text-white px-1">
+            <span id="bossNameLabel" class="text-rose-400 truncate max-w-[115px] sm:max-w-[155px]">OMEGA</span>
+            <span id="bossHpText" class="text-amber-300">14k</span>
+          </div>
+          <div class="w-full h-1.5 sm:h-2 bg-slate-800 rounded-full overflow-hidden mt-0.5">
+            <div id="bossHpFill" class="h-full bg-gradient-to-r from-rose-600 via-red-500 to-amber-400 transition-all duration-100" style="width: 100%;"></div>
+          </div>
+        </div>
+
+        <!-- 2x4 COLORFUL CHECKERED STAT UPGRADE PANEL (Exact recreation of Reference Image 2!) -->
+        <div id="statsDrawer" class="hidden mt-2 w-[310px] sm:w-[440px] z-30">
+          <div id="statsRows" class="grid grid-cols-2 gap-1.5 sm:gap-2"></div>
+          <div class="flex justify-center mt-1.5">
+            <button id="btnCloseStats" type="button" class="bg-slate-900/85 hover:bg-slate-800 text-white border-2 border-slate-950 rounded-full px-3 py-0.5 text-[10px] font-black shadow flex items-center gap-1">
+              <svg viewBox="0 0 20 20" class="w-3.5 h-3.5"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg><span>收起属性面板</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Evolution Branch Picker Dropdown (Triggered from Left Red Chevron or on Level Up) -->
+        <div id="evoPanel" class="hidden mt-2 rbx-card p-2.5 bg-amber-50/95 w-[270px] sm:w-[340px] z-30">
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="cartoon-font font-black text-xs text-slate-900">选择坦克进化分支</span>
+            <span id="evoTierBadge" class="text-[9px] font-black bg-amber-400 border border-slate-900 px-1.5 rounded">TIER 1</span>
+          </div>
+          <div id="evoChoices" class="grid grid-cols-2 sm:grid-cols-3 gap-1.5"></div>
+        </div>
+      </div>
+
+      <!-- Top-Right: Slim Dark-Pill Leaderboard -->
+      <div class="pointer-events-auto flex flex-col items-end gap-1 shrink-0">
+        <button id="btnToggleLb" type="button" class="bg-slate-900/80 hover:bg-slate-800 border border-slate-700 text-amber-300 font-black text-[10px] px-2 py-0.5 rounded-lg flex items-center gap-1 shadow">
+          <svg viewBox="0 0 24 24" class="w-3.5 h-3.5 inline-block shrink-0"><path d="M6 4h12v5a6 6 0 01-12 0V4z" fill="#fbbf24" stroke="#0f172a" stroke-width="2"/><path d="M6 6H3v3a3 3 0 003 3m12-6h3v3a3 3 0 01-3 3M12 15v4m-4 2h8" stroke="#fbbf24" stroke-width="2" stroke-linecap="round"/></svg>
+          <span id="serverCountText" class="text-white">10/20</span>
+        </button>
+
+        <div id="leaderboardCard" class="w-28 sm:w-44 space-y-1">
+          <div id="leaderboardList" class="space-y-1"></div>
+        </div>
+
+        <div id="killFeedList" class="pointer-events-none flex flex-col items-end gap-0.5 w-32 sm:w-44"></div>
+      </div>
+    </div>
+
+    <!-- 2. MIDDLE DOCKS: Left Square SVG Dock (商店/列表/索引 + ⚙/🏠) & Right Cluster (Gems + 礼物/任务 + 等级 + XP Boost) -->
+    <div class="flex items-center justify-between w-full my-auto">
+
+      <!-- Left Edge Vertical Dock -->
+      <div id="hudLeftDock" class="pointer-events-auto relative flex flex-col items-center gap-1.5">
+        <button id="btnChests" type="button" class="rbx-tile-shop active:translate-y-0.5 w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex flex-col items-center justify-center relative">
+          <svg viewBox="0 0 32 32" class="w-6 h-6 sm:w-7 sm:h-7"><path d="M6 13h20l-2.5 13H8.5z" fill="#ef4444" stroke="#0f172a" stroke-width="2.2" stroke-linejoin="round"/><path d="M4 11h24v3H4z" fill="#f87171" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/><path d="M11 11l4-6m6 6l-4-6" stroke="#0f172a" stroke-width="2.4" stroke-linecap="round"/><path d="M12 16v7m4-7v7m4-7v7" stroke="#991b1b" stroke-width="2" stroke-linecap="round"/></svg>
+          <span class="outline-text-sm text-white font-black text-[10px] sm:text-[11px] leading-none mt-0.5">商店</span>
+          <span class="w-4 h-4 rounded-full bg-rose-500 border border-white text-white text-[9px] font-black flex items-center justify-center absolute -top-1 -right-1">1</span>
+        </button>
+
+        <button id="btnHudTrade" type="button" class="rbx-tile-blue active:translate-y-0.5 w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex flex-col items-center justify-center">
+          <svg viewBox="0 0 32 32" class="w-6 h-6 sm:w-7 sm:h-7"><circle cx="16" cy="16" r="11" fill="#ef4444" stroke="#0f172a" stroke-width="2.4"/><circle cx="16" cy="16" r="6.5" fill="#ffffff" stroke="#0f172a" stroke-width="2"/><circle cx="16" cy="16" r="2.8" fill="#ef4444"/></svg>
+          <span class="outline-text-sm text-white font-black text-[10px] sm:text-[11px] leading-none mt-0.5">列表</span>
+        </button>
+
+        <button id="btnIndex" type="button" class="rbx-tile-blue active:translate-y-0.5 w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex flex-col items-center justify-center">
+          <svg viewBox="0 0 32 32" class="w-6 h-6 sm:w-7 sm:h-7"><path d="M7 5h15a3 3 0 013 3v18a2 2 0 01-2 2H8a3 3 0 01-3-3V8a3 3 0 013-3z" fill="#3b82f6" stroke="#0f172a" stroke-width="2.2"/><path d="M8 23h16v4H8a2 2 0 010-4z" fill="#e0f2fe" stroke="#0f172a" stroke-width="2"/><path d="M10 9h10M10 13h7" stroke="#bae6fd" stroke-width="2.2" stroke-linecap="round"/></svg>
+          <span class="outline-text-sm text-white font-black text-[10px] sm:text-[11px] leading-none mt-0.5">索引</span>
+        </button>
+
+        <div class="flex items-center gap-1 mt-0.5">
+          <button id="btnHudMenu" type="button" title="设置" class="rbx-tile-blue active:translate-y-0.5 w-6 h-6 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center">
+            <svg viewBox="0 0 24 24" class="w-4 h-4"><path d="M12 8.5a3.5 3.5 0 100 7 3.5 3.5 0 000-7zm8.2 2.4l-1.7-.3a6.8 6.8 0 00-.7-1.7l1-1.4-1.7-1.7-1.4 1a6.8 6.8 0 00-1.7-.7l-.3-1.7h-2.4l-.3 1.7a6.8 6.8 0 00-1.7.7l-1.4-1-1.7 1.7 1 1.4a6.8 6.8 0 00-.7 1.7l-1.7.3v2.4l1.7.3c.1.6.4 1.2.7 1.7l-1 1.4 1.7 1.7 1.4-1c.5.3 1.1.6 1.7.7l.3 1.7h2.4l.3-1.7c.6-.1 1.2-.4 1.7-.7l1.4 1 1.7-1.7-1-1.4c.3-.5.6-1.1.7-1.7l1.7-.3v-2.4z" fill="#e2e8f0" stroke="#0f172a" stroke-width="1.8" stroke-linejoin="round"/></svg>
+          </button>
+          <button id="btnLobby" type="button" title="返回大厅" class="rbx-tile-blue active:translate-y-0.5 w-6 h-6 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center">
+            <svg viewBox="0 0 24 24" class="w-4 h-4"><rect x="3" y="4" width="18" height="16" rx="3" fill="#f97316" stroke="#0f172a" stroke-width="2"/><path d="M3 10h18M9 4v16" stroke="#9a3412" stroke-width="1.8"/></svg>
+          </button>
+        </div>
+
+        <!-- Settings Mini Popover -->
+        <div id="hudMenuDropdown" class="hidden absolute left-14 bottom-0 z-30 bg-slate-900/95 border-2 border-slate-950 rounded-2xl p-2 w-36 shadow-2xl flex flex-col gap-1.5">
+          <button id="btnSound" type="button" class="rbx-btn bg-white hover:bg-slate-100 text-slate-900 font-extrabold text-[11px] py-1 px-2 rounded-xl">
+            音效: 开
+          </button>
+          <button id="btnShake" type="button" class="rbx-btn bg-amber-200 hover:bg-amber-100 text-slate-900 font-extrabold text-[11px] py-1 px-2 rounded-xl">
+            震动: 开
+          </button>
+        </div>
+      </div>
+
+      <!-- Right Edge Stack -->
+      <div id="hudRightDock" class="pointer-events-auto relative flex flex-col items-end gap-1.5">
+
+        <!-- Gems Counter Pill -->
+        <button id="btnGemPlus" type="button" title="输入兑换码领宝石" class="bg-slate-900/75 border-2 border-slate-900 rounded-full pl-1 pr-2 py-0.5 flex items-center gap-1.5 shadow">
+          <span class="w-4 h-4 rounded-full bg-white text-slate-900 font-black text-xs flex items-center justify-center leading-none">+</span>
+          <span id="gemsText" class="outline-text-sm text-white font-black text-xs sm:text-sm">5,000</span>
+          <svg viewBox="0 0 28 28" class="w-4 h-4 sm:w-5 sm:h-5 shrink-0 inline-block"><polygon points="6,4 22,4 26,11 14,25 2,11" fill="#38bdf8" stroke="#0f172a" stroke-width="2.2" stroke-linejoin="round"/><polygon points="6,4 14,11 2,11" fill="#bae6fd"/><polygon points="14,11 22,4 26,11" fill="#7dd3fc"/><polygon points="14,11 26,11 14,25" fill="#0284c7"/></svg>
+        </button>
+
+        <!-- 礼物 (Codes) & 任务 (Badges) -->
+        <div class="flex items-center gap-1.5">
+          <button id="btnCodes" type="button" class="rbx-tile-blue active:translate-y-0.5 w-11 h-11 sm:w-12 sm:h-12 rounded-2xl flex flex-col items-center justify-center">
+            <svg viewBox="0 0 32 32" class="w-5 h-5 sm:w-6 sm:h-6"><rect x="5" y="12" width="22" height="15" rx="2.5" fill="#fbbf24" stroke="#0f172a" stroke-width="2.2"/><rect x="4" y="9" width="24" height="5" rx="1.5" fill="#fde047" stroke="#0f172a" stroke-width="2"/><rect x="13.5" y="9" width="5" height="18" fill="#ef4444" stroke="#0f172a" stroke-width="1.6"/><path d="M16 9c-3-4-8-3-6 0h6zm0 0c3-4 8-3 6 0h-6z" fill="#ef4444" stroke="#0f172a" stroke-width="1.8"/></svg>
+            <span class="outline-text-sm text-white font-black text-[10px] leading-none mt-0.5">礼物</span>
+          </button>
+
+          <button id="btnBadges" type="button" class="rbx-tile-blue active:translate-y-0.5 w-11 h-11 sm:w-12 sm:h-12 rounded-2xl flex flex-col items-center justify-center relative">
+            <svg viewBox="0 0 32 32" class="w-5 h-5 sm:w-6 sm:h-6"><rect x="7" y="5" width="18" height="23" rx="3" fill="#f8fafc" stroke="#0f172a" stroke-width="2.2"/><rect x="11" y="3" width="10" height="5" rx="1.5" fill="#94a3b8" stroke="#0f172a" stroke-width="2"/><path d="M11 13h10M11 18h10M11 23h6" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/></svg>
+            <span class="outline-text-sm text-white font-black text-[10px] leading-none mt-0.5">任务</span>
+            <span id="hudBadgeDot" class="hidden w-3.5 h-3.5 rounded-full bg-rose-500 border border-white text-white text-[8px] font-black flex items-center justify-center absolute -top-1 -right-1">!</span>
+          </button>
+        </div>
+
+        <!-- 等级 X + Orange Shield Pill -->
+        <button id="btnRightLevel" type="button" class="rbx-pill-blue active:translate-y-0.5 w-[96px] sm:w-[106px] py-1 px-2 rounded-xl flex items-center justify-between relative">
+          <span id="rightStatDot" class="hidden min-w-[16px] h-4 px-1 rounded-full bg-rose-500 border border-white text-white text-[9px] font-black flex items-center justify-center absolute -top-1.5 -left-1.5">1</span>
+          <span id="lvlText" class="outline-text-sm text-white font-black text-[11px] sm:text-xs mx-auto">等级 1</span>
+          <svg viewBox="0 0 24 24" class="w-4 h-4 shrink-0 inline-block"><path d="M12 2.5L4.5 5.5v6.2c0 5 3.3 8.8 7.5 10 4.2-1.2 7.5-5 7.5-10V5.5z" fill="#f97316" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/><path d="M12 5.2l4.8 1.9v4.4c0 3.3-2.1 5.9-4.8 6.8" fill="none" stroke="#fed7aa" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </button>
+
+        <!-- +500,000 Star Boost Pill -->
+        <button id="btnQuickXpBoost" type="button" class="rbx-pill-blue active:translate-y-0.5 w-[96px] sm:w-[106px] py-1 px-2 rounded-xl flex items-center justify-center gap-1">
+          <span class="outline-text-sm text-white font-black text-[10px] sm:text-[11px]">+500,000</span>
+          <svg viewBox="0 0 24 24" class="w-3.5 h-3.5 shrink-0 inline-block"><path d="M12 2l3.1 6.3 7 1-5 4.9 1.2 6.9L12 17.8 5.7 21.1l1.2-6.9-5-4.9 7-1z" fill="#fbbf24" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- 3. BOTTOM ROW: Spawn Shield Crest (Center) & Translucent SVG Action Cluster (Bottom-Right) -->
+    <div class="flex items-end justify-between w-full pb-0.5">
+      <div class="w-20 sm:w-28"></div>
+
+      <!-- Center Spawn Shield Crest -->
+      <div id="spawnShieldCrest" class="hidden flex flex-col items-center mb-4">
+        <svg viewBox="0 0 36 40" class="w-10 h-11 drop-shadow-[0_3px_0_rgba(15,23,42,0.5)]"><path d="M18 3L5 8v11c0 9 5.8 15.8 13 18 7.2-2.2 13-9 13-18V8z" fill="#2563eb" stroke="#0f172a" stroke-width="2.8" stroke-linejoin="round"/><path d="M18 7L9 10.5v8.5c0 6.5 3.9 11.4 9 13.3 5.1-1.9 9-6.8 9-13.3v-8.5z" fill="#e2e8f0" stroke="#1e40af" stroke-width="1.6"/><path d="M13 16l2.5 2.5L23 11" fill="none" stroke="#60a5fa" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+
+      <!-- Bottom-Right Translucent Action Cluster -->
+      <div id="hudActionCluster" class="pointer-events-auto flex items-end gap-1.5 pr-0.5">
+        <button id="btnBurstFire" type="button" title="射击" class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-slate-700/35 hover:bg-slate-700/50 active:scale-95 border-2 border-white/45 backdrop-blur-sm flex items-center justify-center shadow-lg">
+          <svg viewBox="0 0 40 40" class="w-9 h-9 sm:w-10 sm:h-10"><path d="M20 4l4 10 11-4-6 9 9 5-11 2 2 10-9-7-8 7 1-10-10-2 9-5-6-9 10 4z" fill="#ffffff" stroke="rgba(15,23,42,0.22)" stroke-width="1.5" stroke-linejoin="round"/><polygon points="20,13 22.5,18 28,17.5 23.5,21.5 25,27 20,23.5 15,27 16.5,21.5 12,17.5 17.5,18" fill="#cbd5e1"/></svg>
+        </button>
+
+        <div id="hudActionSubCol" class="flex flex-col gap-1.5">
+          <button id="btnFlip180" type="button" title="快速转身 180°" class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-slate-700/35 hover:bg-slate-700/50 active:scale-95 border-2 border-white/45 backdrop-blur-sm flex items-center justify-center text-[11px] font-black text-white shadow">
+            180
+          </button>
+
+          <button id="btnCamToggle" type="button" title="切换高低视角" class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-slate-700/35 hover:bg-slate-700/50 active:scale-95 border-2 border-white/45 backdrop-blur-sm flex items-center justify-center text-[10px] font-black text-white shadow">
+            3D
+          </button>
+
+          <button id="btnAutoFire" type="button" title="自动开火开关 (E)" class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-emerald-500/75 hover:bg-emerald-500/90 active:scale-95 border-2 border-white/65 backdrop-blur-sm flex items-center justify-center shadow">
+            <svg viewBox="0 0 28 28" class="w-5 h-5 sm:w-6 sm:h-6"><path d="M21 11a7.5 7.5 0 00-13.2-2.6M7 17a7.5 7.5 0 0013.2 2.6" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/><polygon points="22.5,6 23.5,13 16.5,12" fill="#ffffff"/><polygon points="5.5,22 4.5,15 11.5,16" fill="#ffffff"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= REMASTERED FULL-SCREEN 3D LIVE MAIN MENU ================= -->
+  <div id="lobbyModal" class="fixed inset-0 z-30 pointer-events-none flex flex-col justify-between p-2.5 sm:p-5 bg-gradient-to-b from-sky-200/35 via-transparent to-sky-100/40">
+
+    <!-- 1. TOP STATUS BAR: Player Profile Pill | Star XP Bar | Gems Pill -->
+    <div class="flex items-center justify-between gap-2 w-full max-w-2xl mx-auto pt-0.5">
+
+      <!-- Top-Left Player Profile Pill (Clicking opens Garage/Name editor) -->
+      <button id="btnLobbyProfile" type="button" class="pointer-events-auto rbx-pill-blue active:translate-y-0.5 rounded-2xl pl-1 pr-3 py-1 flex items-center gap-2 ml-9 sm:ml-0">
+        <div class="w-9 h-9 rounded-xl bg-sky-100 border-2 border-slate-900 flex items-center justify-center shrink-0">
+          <svg viewBox="0 0 36 32" class="w-8 h-7"><path d="M5 24a13 13 0 0126 0z" fill="#fb7185" stroke="#0f172a" stroke-width="2.6" stroke-linejoin="round"/><ellipse cx="14" cy="17" rx="4" ry="2" transform="rotate(-20 14 17)" fill="rgba(255,255,255,0.55)"/></svg>
+        </div>
+        <div class="text-left leading-tight">
+          <div id="lobbyNameText" class="outline-text-sm text-white font-black text-xs sm:text-sm max-w-[82px] sm:max-w-[110px] truncate">TankPlayer</div>
+          <div class="inline-block bg-slate-900/80 text-amber-300 font-black text-[10px] px-1.5 py-0.2 rounded-full mt-0.5">
+            <span id="lobbyBestLvlText">Best Lv.1</span>
+          </div>
+        </div>
+      </button>
+
+      <!-- Top-Center Star-Flanked Checkered Bar -->
+      <div class="hidden xs:flex sm:flex flex-1 max-w-[165px] sm:max-w-[230px] items-center mx-auto">
+        <span class="z-10 -mr-2.5"><svg viewBox="0 0 32 32" class="w-6 h-6 sm:w-7 sm:h-7 shrink-0 drop-shadow-[0_2px_0_#0f172a]"><path d="M16 2.5l4.1 8.4 9.2 1.3-6.7 6.5 1.6 9.2L16 23.5l-8.2 4.4 1.6-9.2-6.7-6.5 9.2-1.3z" fill="#fbbf24" stroke="#0f172a" stroke-width="2.4" stroke-linejoin="round"/><path d="M16 5.5l2.7 5.6 6.1.9-4.4 4.3" fill="none" stroke="#fef08a" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+        <div class="flex-1 h-5 sm:h-6 rbx-xp-frame rounded-lg overflow-hidden relative">
+          <div id="lobbyProgressFill" class="h-full bg-gradient-to-r from-amber-300 to-amber-500" style="width: 15%;"></div>
+          <div class="absolute inset-0 flex items-center justify-center text-[10px] sm:text-xs font-black text-white outline-text-sm">
+            <span id="lobbyIndexCount">1/21</span>
+          </div>
+        </div>
+        <span class="z-10 -ml-2.5"><svg viewBox="0 0 32 32" class="w-6 h-6 sm:w-7 sm:h-7 shrink-0 drop-shadow-[0_2px_0_#0f172a]"><path d="M16 2.5l4.1 8.4 9.2 1.3-6.7 6.5 1.6 9.2L16 23.5l-8.2 4.4 1.6-9.2-6.7-6.5 9.2-1.3z" fill="#fbbf24" stroke="#0f172a" stroke-width="2.4" stroke-linejoin="round"/><path d="M16 5.5l2.7 5.6 6.1.9-4.4 4.3" fill="none" stroke="#fef08a" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+      </div>
+
+      <!-- Top-Right Gems Counter Pill -->
+      <button id="btnLobbyGems" type="button" class="pointer-events-auto bg-slate-900/85 hover:bg-slate-800 border-2 border-slate-950 rounded-full pl-1.5 pr-2.5 py-1 flex items-center gap-1.5 shadow-md active:translate-y-0.5">
+        <span class="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-white text-slate-900 font-black text-xs flex items-center justify-center leading-none">+</span>
+        <span id="lobbyGemsText" class="outline-text-sm text-white font-black text-xs sm:text-sm">5,000</span>
+        <svg viewBox="0 0 28 28" class="w-4 h-4 sm:w-5 sm:h-5 shrink-0 inline-block"><polygon points="6,4 22,4 26,11 14,25 2,11" fill="#38bdf8" stroke="#0f172a" stroke-width="2.2" stroke-linejoin="round"/><polygon points="6,4 14,11 2,11" fill="#bae6fd"/><polygon points="14,11 22,4 26,11" fill="#7dd3fc"/><polygon points="14,11 26,11 14,25" fill="#0284c7"/></svg>
+      </button>
+    </div>
+
+    <!-- 2. UPPER-CENTER CHUNKY CARTOON HERO LOGO -->
+    <div id="lobbyHeroWrap" class="flex flex-col items-center mt-1 sm:mt-2 select-none">
+      <div class="relative flex flex-col items-center">
+        <!-- Decorative Peeking Red Dome & Yellow Action Bursts -->
+        <svg id="lobbyHeroSvg" viewBox="0 0 220 56" class="w-44 sm:w-56 h-11 sm:h-14 -mb-4 sm:-mb-5">
+          <rect x="46" y="14" width="11" height="22" rx="3" transform="rotate(-26 51 25)" fill="#fde047"/>
+          <rect x="64" y="8" width="10" height="20" rx="3" transform="rotate(-12 69 18)" fill="#facc15"/>
+          <rect x="146" y="8" width="10" height="20" rx="3" transform="rotate(14 151 18)" fill="#facc15"/>
+          <rect x="163" y="14" width="11" height="22" rx="3" transform="rotate(28 168 25)" fill="#fde047"/>
+          <path d="M78 54a32 32 0 0164 0z" fill="#fb7185" stroke="#0f172a" stroke-width="5" stroke-linejoin="round"/>
+          <ellipse cx="98" cy="36" rx="9" ry="4.5" transform="rotate(-22 98 36)" fill="rgba(255,255,255,0.5)"/>
+        </svg>
+        <h1 id="lobbyHeroTitle" class="cartoon-font hero-title-stroke text-4xl sm:text-6xl font-black tracking-tight flex items-center">
+          <span class="text-white">坦克</span><span class="text-amber-400">坦克！</span>
+        </h1>
+        <div id="lobbyHeroBadge" class="mt-1 bg-white/80 backdrop-blur-sm border-2 border-slate-900 rounded-full px-3 py-0.5 text-[10px] sm:text-xs font-black text-slate-800 shadow">
+          <span id="equippedTankBadge">当前出战: Basic Tank</span> • <span id="lobbyModeSummary" class="text-sky-700">Normal 混战</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. OPEN CENTER STAGE FOR LIVE 3D ROTATING TANK SHOWCASE -->
+    <div id="lobbyCenterStage" class="flex-1 min-h-[120px] sm:min-h-[160px]"></div>
+
+    <!-- 4. BOTTOM ACTION CLUSTER: Left Square Dock | Center Main CTA Buttons | Right Square Dock -->
+    <div id="lobbyBottomBar" class="w-full max-w-xl mx-auto flex items-end justify-between gap-2 sm:gap-4 pb-2 sm:pb-4">
+
+      <!-- Left Dock: 商店 & 交易行 -->
+      <div id="lobbyLeftDock" class="pointer-events-auto flex flex-col gap-2 shrink-0">
+        <button id="btnLobbyChests" type="button" class="rbx-tile-shop active:translate-y-0.5 w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex flex-col items-center justify-center relative">
+          <svg viewBox="0 0 32 32" class="w-6 h-6 sm:w-7 sm:h-7"><path d="M6 14h20v12a2 2 0 01-2 2H8a2 2 0 01-2-2z" fill="#fef3c7" stroke="#0f172a" stroke-width="2.2"/><path d="M4 10l2-5h20l2 5v4a3 3 0 01-6 0 3 3 0 01-6 0 3 3 0 01-6 0 3 3 0 01-6 0z" fill="#ef4444" stroke="#0f172a" stroke-width="2.2" stroke-linejoin="round"/><path d="M11 5l-1 9M21 5l1 9" stroke="#ffffff" stroke-width="2.2"/></svg>
+          <span class="outline-text-sm text-white font-black text-[11px] sm:text-xs leading-none mt-0.5">商店</span>
+          <span class="w-4 h-4 rounded-full bg-rose-500 border border-white text-white text-[9px] font-black flex items-center justify-center absolute -top-1 -right-1">1</span>
+        </button>
+
+        <button id="btnLobbyTrade" type="button" class="rbx-tile-blue active:translate-y-0.5 w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex flex-col items-center justify-center">
+          <svg viewBox="0 0 32 32" class="w-6 h-6 sm:w-7 sm:h-7"><rect x="5" y="15" width="6" height="12" rx="1.5" fill="#fbbf24" stroke="#0f172a" stroke-width="2.2"/><rect x="13" y="7" width="6" height="20" rx="1.5" fill="#22c55e" stroke="#0f172a" stroke-width="2.2"/><rect x="21" y="12" width="6" height="15" rx="1.5" fill="#f97316" stroke="#0f172a" stroke-width="2.2"/></svg>
+          <span class="outline-text-sm text-white font-black text-[11px] sm:text-xs leading-none mt-0.5">交易行</span>
+        </button>
+      </div>
+
+      <!-- Center Main Button Stack (Switches seamlessly into ultra-compact 2-row layout in Mobile Landscape!) -->
+      <div id="lobbyCenterCta" class="pointer-events-auto flex-1 max-w-[260px] sm:max-w-[320px] flex flex-col gap-2.5">
+        <!-- Big Yellow PLAY Button -->
+        <button id="btnPlay" type="button" class="menu-btn-gold menu-btn-press w-full py-3 sm:py-3.5 rounded-full flex items-center justify-center gap-2.5">
+          <svg viewBox="0 0 28 28" class="w-7 h-7 sm:w-8 sm:h-8 shrink-0"><path d="M7 5.5c0-1.5 1.6-2.4 2.9-1.6l13.2 8.5c1.2.8 1.2 2.4 0 3.2L9.9 24.1c-1.3.8-2.9-.1-2.9-1.6z" fill="#0f172a"/></svg>
+          <span class="cartoon-font hero-title-stroke text-white font-black text-2xl sm:text-3xl tracking-wider">开始游戏</span>
+        </button>
+
+        <!-- Sub-Action Group: Portrait = stacked Blue + 2-col pills; Mobile Landscape = sleek 3-col single row! -->
+        <div id="lobbySubActions" class="grid grid-cols-2 gap-2">
+          <button id="btnOpenModeModal" type="button" class="col-span-2 landscape-col-1 menu-btn-blue menu-btn-press w-full py-2 sm:py-2.5 rounded-full flex items-center justify-center gap-2">
+            <svg viewBox="0 0 36 28" class="w-8 h-6 sm:w-9 sm:h-7 shrink-0"><path d="M9 5h18a8 8 0 017.8 9.6l-1.4 6.2a4 4 0 01-6.5 2.1l-3.4-2.9H12.5l-3.4 2.9a4 4 0 01-6.5-2.1L1.2 14.6A8 8 0 019 5z" fill="#ffffff" stroke="#0f172a" stroke-width="2.4" stroke-linejoin="round"/><path d="M10 10v6M7 13h6" stroke="#0f172a" stroke-width="2.4" stroke-linecap="round"/><circle cx="24" cy="11.5" r="1.6" fill="#0f172a"/><circle cx="27.5" cy="14" r="1.6" fill="#0f172a"/></svg>
+            <span class="cartoon-font outline-text text-white font-black text-lg sm:text-xl tracking-wide">游戏模式</span>
+          </button>
+
+          <button id="btnOpenGarage" type="button" class="menu-btn-purple menu-btn-press py-2 sm:py-2.5 px-2 rounded-2xl flex items-center justify-center gap-1.5">
+            <svg viewBox="0 0 28 28" class="w-5 h-5 sm:w-6 sm:h-6 shrink-0"><path d="M21 4a2.8 2.8 0 014 4L13 20l-4-4z" fill="#ffffff" stroke="#0f172a" stroke-width="2.2" stroke-linejoin="round"/><path d="M9 16c-3 0-4.5 2.5-4.5 5 0 1-.5 2-1.5 2.5 2.5 1 6.5.5 8-1.5 1.2-1.5 1-3.5-2-6z" fill="#f8fafc" stroke="#0f172a" stroke-width="2.2" stroke-linejoin="round"/></svg>
+            <span class="cartoon-font outline-text-sm text-white font-black text-xs sm:text-sm">坦克/外观</span>
+          </button>
+
+          <button id="btnLobbyIndex" type="button" class="menu-btn-green menu-btn-press py-2 sm:py-2.5 px-2 rounded-2xl flex items-center justify-center gap-1.5">
+            <svg viewBox="0 0 28 28" class="w-5 h-5 sm:w-6 sm:h-6 shrink-0"><path d="M6 21l8-6 8 6v-5l-8-6-8 6z" fill="#4ade80" stroke="#0f172a" stroke-width="2.2" stroke-linejoin="round"/><path d="M6 14l8-6 8 6v-5l-8-6-8 6z" fill="#86efac" stroke="#0f172a" stroke-width="2.2" stroke-linejoin="round"/></svg>
+            <span class="cartoon-font outline-text-sm text-white font-black text-xs sm:text-sm">升级图鉴</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Right Dock: 礼物, 任务, 设置 -->
+      <div id="lobbyRightDock" class="pointer-events-auto flex flex-col gap-2 shrink-0">
+        <button id="btnLobbyCodes" type="button" class="rbx-tile-blue active:translate-y-0.5 w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex flex-col items-center justify-center">
+          <svg viewBox="0 0 32 32" class="w-6 h-6 sm:w-7 sm:h-7"><rect x="5" y="12" width="22" height="15" rx="2.5" fill="#fbbf24" stroke="#0f172a" stroke-width="2.2"/><rect x="4" y="9" width="24" height="5" rx="1.5" fill="#fde047" stroke="#0f172a" stroke-width="2"/><rect x="13.5" y="9" width="5" height="18" fill="#ef4444" stroke="#0f172a" stroke-width="1.6"/><path d="M16 9c-3-4-8-3-6 0h6zm0 0c3-4 8-3 6 0h-6z" fill="#ef4444" stroke="#0f172a" stroke-width="1.8"/></svg>
+          <span class="outline-text-sm text-white font-black text-[11px] sm:text-xs leading-none mt-0.5">礼物</span>
+        </button>
+
+        <button id="btnLobbyBadges" type="button" class="rbx-tile-blue active:translate-y-0.5 w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex flex-col items-center justify-center relative">
+          <svg viewBox="0 0 32 32" class="w-6 h-6 sm:w-7 sm:h-7"><rect x="7" y="5" width="18" height="23" rx="3" fill="#f8fafc" stroke="#0f172a" stroke-width="2.2"/><rect x="11" y="3" width="10" height="5" rx="1.5" fill="#94a3b8" stroke="#0f172a" stroke-width="2"/><path d="M11 13h10M11 18h10M11 23h6" stroke="#0f172a" stroke-width="2.2" stroke-linecap="round"/><path d="M19 20l2 2 4-4" fill="none" stroke="#22c55e" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="outline-text-sm text-white font-black text-[11px] sm:text-xs leading-none mt-0.5">任务</span>
+          <span id="lobbyBadgeDot" class="hidden w-4 h-4 rounded-full bg-rose-500 border border-white text-white text-[9px] font-black flex items-center justify-center absolute -top-1 -right-1">1</span>
+        </button>
+
+        <button id="btnLobbySettings" type="button" class="rbx-tile-blue active:translate-y-0.5 w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex flex-col items-center justify-center">
+          <svg viewBox="0 0 28 28" class="w-6 h-6 sm:w-7 sm:h-7"><path d="M14 9.5a4.5 4.5 0 100 9 4.5 4.5 0 000-9zm9.5 2.8l-2-.4a8 8 0 00-.8-2l1.2-1.6-2-2-1.6 1.2a8 8 0 00-2-.8l-.4-2h-2.8l-.4 2a8 8 0 00-2 .8l-1.6-1.2-2 2 1.2 1.6a8 8 0 00-.8 2l-2 .4v2.8l2 .4c.2.7.5 1.4.8 2l-1.2 1.6 2 2 1.6-1.2c.6.4 1.3.7 2 .8l.4 2h2.8l.4-2c.7-.1 1.4-.4 2-.8l1.6 1.2 2-2-1.2-1.6c.4-.6.7-1.3.8-2l2-.4v-2.8z" fill="#f8fafc" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/></svg>
+          <span class="outline-text-sm text-white font-black text-[11px] sm:text-xs leading-none mt-0.5">设置</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= GAME MODE SELECTION MODAL ================= -->
+  <div id="modeModal" class="hidden fixed inset-0 z-40 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div class="rbx-card w-full max-w-md p-5 bg-white">
+      <div class="flex items-center justify-between pb-3 border-b-2 border-slate-100">
+        <div class="flex items-center gap-2">
+          <svg viewBox="0 0 36 28" class="w-8 h-6 sm:w-9 sm:h-7 shrink-0"><path d="M9 5h18a8 8 0 017.8 9.6l-1.4 6.2a4 4 0 01-6.5 2.1l-3.4-2.9H12.5l-3.4 2.9a4 4 0 01-6.5-2.1L1.2 14.6A8 8 0 019 5z" fill="#ffffff" stroke="#0f172a" stroke-width="2.4" stroke-linejoin="round"/><path d="M10 10v6M7 13h6" stroke="#0f172a" stroke-width="2.4" stroke-linecap="round"/><circle cx="24" cy="11.5" r="1.6" fill="#0f172a"/><circle cx="27.5" cy="14" r="1.6" fill="#0f172a"/></svg>
+          <h2 class="cartoon-font text-xl font-black text-slate-900">选择游戏模式</h2>
+        </div>
+        <button id="btnCloseMode" type="button" class="rbx-btn bg-rose-500 text-white font-black text-xs px-2.5 py-1 rounded-lg">✕</button>
+      </div>
+
+      <div id="modeButtons" class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4">
+        <button type="button" data-mode="normal" class="mode-card rbx-btn bg-amber-300 text-slate-900 p-3 rounded-xl text-left">
+          <div class="font-black text-sm">Normal 混战</div>
+          <div class="text-[11px] font-bold text-slate-700 mt-0.5">标准自由竞技 + 宝箱稀有坦克</div>
+        </button>
+        <button type="button" data-mode="mega" class="mode-card rbx-btn bg-white hover:bg-slate-50 text-slate-900 p-3 rounded-xl text-left">
+          <div class="font-black text-sm">Mega 狂暴服</div>
+          <div class="text-[11px] font-bold text-slate-600 mt-0.5">3倍极速升级 + 高密度大战场</div>
+        </button>
+        <button type="button" data-mode="rvb" class="mode-card rbx-btn bg-white hover:bg-slate-50 text-slate-900 p-3 rounded-xl text-left">
+          <div class="font-black text-sm">Red vs Blue</div>
+          <div class="text-[11px] font-bold text-slate-600 mt-0.5">红蓝双阵营对抗 + 安全基地</div>
+        </button>
+        <button type="button" data-mode="pro" class="mode-card rbx-btn bg-white hover:bg-slate-50 text-slate-900 p-3 rounded-xl text-left">
+          <div class="font-black text-sm">Pro 纯竞技</div>
+          <div class="text-[11px] font-bold text-slate-600 mt-0.5">禁用宝箱特权，纯靠操作发育</div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= TANK / APPEARANCE GARAGE MODAL ================= -->
+  <div id="garageModal" class="hidden fixed inset-0 z-40 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div class="rbx-card w-full max-w-lg p-5 bg-white">
+      <div class="flex items-center justify-between pb-3 border-b-2 border-slate-100">
+        <div class="flex items-center gap-2">
+          <svg viewBox="0 0 28 28" class="w-5 h-5 sm:w-6 sm:h-6 shrink-0"><path d="M21 4a2.8 2.8 0 014 4L13 20l-4-4z" fill="#ffffff" stroke="#0f172a" stroke-width="2.2" stroke-linejoin="round"/><path d="M9 16c-3 0-4.5 2.5-4.5 5 0 1-.5 2-1.5 2.5 2.5 1 6.5.5 8-1.5 1.2-1.5 1-3.5-2-6z" fill="#f8fafc" stroke="#0f172a" stroke-width="2.2" stroke-linejoin="round"/></svg>
+          <h2 class="cartoon-font text-xl font-black text-slate-900">坦克外观与车库</h2>
+        </div>
+        <button id="btnCloseGarage" type="button" class="rbx-btn bg-rose-500 text-white font-black text-xs px-2.5 py-1 rounded-lg">✕</button>
+      </div>
+
+      <div class="mt-3 space-y-3">
+        <!-- Nickname & Paint Color -->
+        <div>
+          <label for="playerNameInput" class="block text-xs font-black text-slate-700 mb-1">玩家昵称 & 坦克涂装颜色</label>
+          <div class="flex gap-2 items-center">
+            <input id="playerNameInput" type="text" maxlength="14" value="TankPlayer" class="flex-1 border-2 border-slate-900 rounded-xl px-3 py-1.5 font-bold text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-400" />
+            <div id="colorSwatches" class="flex items-center gap-1.5">
+              <button type="button" data-color="#ef4444" class="swatch-btn w-7 h-7 rounded-full bg-red-500 border-2 border-slate-900 ring-2 ring-offset-1 ring-slate-900"></button>
+              <button type="button" data-color="#3b82f6" class="swatch-btn w-7 h-7 rounded-full bg-blue-500 border-2 border-slate-900"></button>
+              <button type="button" data-color="#10b981" class="swatch-btn w-7 h-7 rounded-full bg-emerald-500 border-2 border-slate-900"></button>
+              <button type="button" data-color="#f59e0b" class="swatch-btn w-7 h-7 rounded-full bg-amber-500 border-2 border-slate-900"></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Owned Secret / Exotic Tanks -->
+        <div class="bg-slate-50 border-2 border-slate-200 rounded-xl p-2.5">
+          <div class="text-xs font-black text-slate-700 mb-1.5">选择出战初始坦克（商店抽取或交易行获得）：</div>
+          <div id="inventoryList" class="flex flex-wrap gap-1.5"></div>
+        </div>
+
+        <!-- Community Perk Button -->
+        <button id="btnJoinGroup" type="button" class="rbx-btn w-full bg-blue-500 hover:bg-blue-400 text-white font-black text-xs sm:text-sm px-3.5 py-2 rounded-xl flex items-center justify-center gap-2">
+          <svg viewBox="0 0 24 24" class="w-4 h-4 shrink-0 inline-block"><path d="M12 2.5L4.5 5.5v6.2c0 5 3.3 8.8 7.5 10 4.2-1.2 7.5-5 7.5-10V5.5z" fill="#f97316" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/></svg>
+          <span id="groupBtnLabel">加入玩家社区 (解锁 Flame 分支)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= LOBBY SETTINGS MODAL ================= -->
+  <div id="settingsModal" class="hidden fixed inset-0 z-40 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div class="rbx-card w-full max-w-sm p-5 bg-white">
+      <div class="flex items-center justify-between pb-3 border-b-2 border-slate-100">
+        <div class="flex items-center gap-2">
+          <svg viewBox="0 0 28 28" class="w-6 h-6 sm:w-7 sm:h-7"><path d="M14 9.5a4.5 4.5 0 100 9 4.5 4.5 0 000-9zm9.5 2.8l-2-.4a8 8 0 00-.8-2l1.2-1.6-2-2-1.6 1.2a8 8 0 00-2-.8l-.4-2h-2.8l-.4 2a8 8 0 00-2 .8l-1.6-1.2-2 2 1.2 1.6a8 8 0 00-.8 2l-2 .4v2.8l2 .4c.2.7.5 1.4.8 2l-1.2 1.6 2 2 1.6-1.2c.6.4 1.3.7 2 .8l.4 2h2.8l.4-2c.7-.1 1.4-.4 2-.8l1.6 1.2 2-2-1.2-1.6c.4-.6.7-1.3.8-2l2-.4v-2.8z" fill="#f8fafc" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/></svg>
+          <h2 class="cartoon-font text-xl font-black text-slate-900">游戏设置</h2>
+        </div>
+        <button id="btnCloseSettings" type="button" class="rbx-btn bg-rose-500 text-white font-black text-xs px-2.5 py-1 rounded-lg">✕</button>
+      </div>
+      <div class="mt-4 space-y-2.5">
+        <button id="btnSetSound" type="button" class="rbx-btn w-full bg-sky-100 hover:bg-sky-200 text-slate-900 font-black text-sm py-2 rounded-xl">音效: 开</button>
+        <button id="btnSetShake" type="button" class="rbx-btn w-full bg-amber-100 hover:bg-amber-200 text-slate-900 font-black text-sm py-2 rounded-xl">击杀镜头震动: 开</button>
+        <button id="btnSetAutoFire" type="button" class="rbx-btn w-full bg-emerald-200 hover:bg-emerald-300 text-slate-900 font-black text-sm py-2 rounded-xl">默认自动开火: 开</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= CODES MODAL (Blue Bird) ================= -->
+  <div id="codesModal" class="hidden fixed inset-0 z-40 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div class="rbx-card w-full max-w-md p-5 bg-white">
+      <div class="flex items-center justify-between pb-3 border-b-2 border-slate-100">
+        <div class="flex items-center gap-2">
+          <svg viewBox="0 0 32 32" class="w-5 h-5 sm:w-6 sm:h-6"><rect x="5" y="12" width="22" height="15" rx="2.5" fill="#fbbf24" stroke="#0f172a" stroke-width="2.2"/><rect x="4" y="9" width="24" height="5" rx="1.5" fill="#fde047" stroke="#0f172a" stroke-width="2"/><rect x="13.5" y="9" width="5" height="18" fill="#ef4444" stroke="#0f172a" stroke-width="1.6"/><path d="M16 9c-3-4-8-3-6 0h6zm0 0c3-4 8-3 6 0h-6z" fill="#ef4444" stroke="#0f172a" stroke-width="1.8"/></svg>
+          <h2 class="cartoon-font text-xl font-black text-slate-900">兑换礼包码 (Codes)</h2>
+        </div>
+        <button id="btnCloseCodes" type="button" class="rbx-btn bg-rose-500 text-white font-black text-xs px-2.5 py-1 rounded-lg">✕</button>
+      </div>
+
+      <p class="text-xs font-semibold text-slate-600 mt-3">输入官方 2.5 版本兑换码领取大量 XP 与 Gems 宝石（点击下方标签可一键填入）：</p>
+
+      <div class="flex gap-2 mt-3">
+        <input id="codeInput" type="text" placeholder="输入大写兑换码..." class="flex-1 border-2 border-slate-900 rounded-xl px-3 py-2 font-black text-sm uppercase focus:outline-none focus:ring-2 focus:ring-sky-400" />
+        <button id="btnRedeemCode" type="button" class="rbx-btn bg-sky-400 hover:bg-sky-300 text-slate-950 font-black text-sm px-4 py-2 rounded-xl">兑换</button>
+      </div>
+
+      <div id="codeQuickTags" class="flex flex-wrap gap-1.5 mt-3"></div>
+      <div id="codeFeedback" class="mt-3 text-xs font-extrabold min-h-[1.25rem] text-emerald-600"></div>
+    </div>
+  </div>
+
+  <!-- ================= CHESTS / SECRETS GACHA MODAL ================= -->
+  <div id="chestsModal" class="hidden fixed inset-0 z-40 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div class="rbx-card w-full max-w-lg p-5 bg-white">
+      <div class="flex items-center justify-between pb-3 border-b-2 border-slate-100">
+        <div class="flex items-center gap-2">
+          <svg viewBox="0 0 32 32" class="w-6 h-6 sm:w-7 sm:h-7"><path d="M6 13h20l-2.5 13H8.5z" fill="#ef4444" stroke="#0f172a" stroke-width="2.2" stroke-linejoin="round"/><path d="M4 11h24v3H4z" fill="#f87171" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/><path d="M11 11l4-6m6 6l-4-6" stroke="#0f172a" stroke-width="2.4" stroke-linecap="round"/><path d="M12 16v7m4-7v7m4-7v7" stroke="#991b1b" stroke-width="2" stroke-linecap="round"/></svg>
+          <h2 class="cartoon-font text-xl font-black text-slate-900">稀有坦克商店宝箱</h2>
+        </div>
+        <button id="btnCloseChests" type="button" class="rbx-btn bg-rose-500 text-white font-black text-xs px-2.5 py-1 rounded-lg">✕</button>
+      </div>
+
+      <div class="flex items-center justify-between bg-amber-100 border-2 border-slate-900 rounded-xl px-3 py-2 mt-3">
+        <span class="text-xs font-black text-slate-800">当前拥有宝石:</span>
+        <span class="font-black text-sm text-amber-700 flex items-center gap-1"><svg viewBox="0 0 28 28" class="w-4 h-4 sm:w-5 sm:h-5 shrink-0 inline-block"><polygon points="6,4 22,4 26,11 14,25 2,11" fill="#38bdf8" stroke="#0f172a" stroke-width="2.2" stroke-linejoin="round"/><polygon points="6,4 14,11 2,11" fill="#bae6fd"/><polygon points="14,11 22,4 26,11" fill="#7dd3fc"/><polygon points="14,11 26,11 14,25" fill="#0284c7"/></svg><span id="chestGemsCount">0</span></span>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+        <!-- Frozen Chest -->
+        <div class="border-2 border-slate-900 rounded-2xl p-3.5 bg-sky-50 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between">
+              <span class="font-black text-sm text-sky-900">Frozen 冰霜宝箱</span>
+              <span class="text-[10px] font-black bg-sky-200 text-sky-900 px-2 py-0.5 rounded-full">普通/稀有</span>
+            </div>
+            <p class="text-[11px] font-semibold text-slate-600 mt-1.5">可抽出 Exotic 坦克 (Snowflake、Suppress) 以及概率获得 Secret 级神车！</p>
+          </div>
+          <button id="btnBuyFrozen" type="button" class="rbx-btn w-full mt-3 bg-sky-400 hover:bg-sky-300 text-slate-950 font-black text-xs py-2 rounded-xl">
+            <span class="inline-flex items-center gap-1"><svg viewBox="0 0 28 28" class="w-4 h-4 sm:w-5 sm:h-5 shrink-0 inline-block"><polygon points="6,4 22,4 26,11 14,25 2,11" fill="#38bdf8" stroke="#0f172a" stroke-width="2.2" stroke-linejoin="round"/><polygon points="6,4 14,11 2,11" fill="#bae6fd"/><polygon points="14,11 22,4 26,11" fill="#7dd3fc"/><polygon points="14,11 26,11 14,25" fill="#0284c7"/></svg> 5,000 开启一次</span>
+          </button>
+        </div>
+
+        <!-- Lava Chest -->
+        <div class="border-2 border-slate-900 rounded-2xl p-3.5 bg-orange-50 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between">
+              <span class="font-black text-sm text-orange-900">Lava 熔岩宝箱</span>
+              <span class="text-[10px] font-black bg-amber-300 text-slate-900 px-2 py-0.5 rounded-full">10倍 Secret 率</span>
+            </div>
+            <p class="text-[11px] font-semibold text-slate-600 mt-1.5">高概率掉落 Secret 终极神车：<strong>Recursive</strong>(分裂弹)、<strong>Orbitron</strong>(环绕无人机)、<strong>Delta</strong>、<strong>Super</strong> 与 <strong>Prime</strong>！</p>
+          </div>
+          <button id="btnBuyLava" type="button" class="rbx-btn w-full mt-3 bg-gradient-to-r from-orange-400 to-rose-500 text-white font-black text-xs py-2 rounded-xl">
+            <span class="inline-flex items-center gap-1"><svg viewBox="0 0 28 28" class="w-4 h-4 sm:w-5 sm:h-5 shrink-0 inline-block"><polygon points="6,4 22,4 26,11 14,25 2,11" fill="#38bdf8" stroke="#0f172a" stroke-width="2.2" stroke-linejoin="round"/><polygon points="6,4 14,11 2,11" fill="#bae6fd"/><polygon points="14,11 22,4 26,11" fill="#7dd3fc"/><polygon points="14,11 26,11 14,25" fill="#0284c7"/></svg> 25,000 开启一次</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="chestResultBox" class="mt-3 p-2.5 rounded-xl bg-slate-100 border border-slate-300 text-center text-xs font-black text-slate-700">
+        抽取到的稀有坦克可在大厅或复活时直接装备上阵（Pro 竞技服除外）！
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= TRADING PLAZA MODAL ================= -->
+  <div id="tradeModal" class="hidden fixed inset-0 z-40 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div class="rbx-card w-full max-w-lg p-5 bg-white">
+      <div class="flex items-center justify-between pb-3 border-b-2 border-slate-100">
+        <div class="flex items-center gap-2">
+          <svg viewBox="0 0 32 32" class="w-6 h-6 sm:w-7 sm:h-7"><circle cx="16" cy="16" r="11" fill="#ef4444" stroke="#0f172a" stroke-width="2.4"/><circle cx="16" cy="16" r="6.5" fill="#ffffff" stroke="#0f172a" stroke-width="2"/><circle cx="16" cy="16" r="2.8" fill="#ef4444"/></svg>
+          <h2 class="cartoon-font text-xl font-black text-slate-900">玩家摊位交易列表</h2>
+        </div>
+        <button id="btnCloseTrade" type="button" class="rbx-btn bg-rose-500 text-white font-black text-xs px-2.5 py-1 rounded-lg">✕</button>
+      </div>
+
+      <p class="text-xs font-semibold text-slate-600 mt-2">2.4/2.5 摊位系统：使用 Gems 直接从大厅摊主手中购买限定或 Secret 坦克，或出售重复藏品。</p>
+      <div id="tradeBoothsList" class="space-y-2 mt-3 max-h-64 overflow-y-auto no-scrollbar"></div>
+      <div id="tradeFeedback" class="mt-2.5 text-xs font-extrabold text-emerald-600 min-h-[1.25rem]"></div>
+    </div>
+  </div>
+
+  <!-- ================= TANK INDEX MODAL ================= -->
+  <div id="indexModal" class="hidden fixed inset-0 z-40 flex items-center justify-center p-3 sm:p-5 bg-slate-900/65 backdrop-blur-sm">
+    <div class="rbx-card w-full max-w-3xl max-h-[88vh] flex flex-col p-4 sm:p-5 bg-white">
+      <div class="flex items-center justify-between pb-3 border-b-2 border-slate-100">
+        <div class="flex items-center gap-2">
+          <svg viewBox="0 0 32 32" class="w-6 h-6 sm:w-7 sm:h-7"><path d="M7 5h15a3 3 0 013 3v18a2 2 0 01-2 2H8a3 3 0 01-3-3V8a3 3 0 013-3z" fill="#3b82f6" stroke="#0f172a" stroke-width="2.2"/><path d="M8 23h16v4H8a2 2 0 010-4z" fill="#e0f2fe" stroke="#0f172a" stroke-width="2"/><path d="M10 9h10M10 13h7" stroke="#bae6fd" stroke-width="2.2" stroke-linecap="round"/></svg>
+          <div>
+            <h2 class="cartoon-font text-xl font-black text-slate-900 leading-tight">坦克索引图鉴</h2>
+            <p class="text-[11px] font-bold text-slate-500">进化、开箱或交易解锁过的坦克将永久点亮图鉴</p>
+          </div>
+        </div>
+        <button id="btnCloseIndex" type="button" class="rbx-btn bg-rose-500 text-white font-black text-xs px-2.5 py-1 rounded-lg">✕</button>
+      </div>
+
+      <!-- Progress Bar & Category Filters -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 my-3">
+        <div class="flex items-center gap-1.5 flex-wrap">
+          <button type="button" data-idx-filter="all" class="idx-filter-btn rbx-btn bg-indigo-500 text-white font-black text-xs px-2.5 py-1 rounded-lg">全部</button>
+          <button type="button" data-idx-filter="evo" class="idx-filter-btn rbx-btn bg-white text-slate-800 font-black text-xs px-2.5 py-1 rounded-lg">常规进化树</button>
+          <button type="button" data-idx-filter="rare" class="idx-filter-btn rbx-btn bg-white text-slate-800 font-black text-xs px-2.5 py-1 rounded-lg">Exotic & Secret</button>
+        </div>
+        <div class="flex items-center gap-2">
+          <span id="indexProgressText" class="text-xs font-black text-indigo-700">1 / 21 已发现</span>
+          <div class="w-28 h-3 bg-slate-200 border border-slate-900 rounded-full overflow-hidden">
+            <div id="indexProgressFill" class="h-full bg-indigo-500 transition-all duration-200" style="width: 5%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tank Grid -->
+      <div id="indexGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 overflow-y-auto pr-1 no-scrollbar flex-1"></div>
+    </div>
+  </div>
+
+  <!-- ================= ROBLOX BADGES MODAL ================= -->
+  <div id="badgesModal" class="hidden fixed inset-0 z-40 flex items-center justify-center p-3 sm:p-5 bg-slate-900/65 backdrop-blur-sm">
+    <div class="rbx-card w-full max-w-2xl max-h-[88vh] flex flex-col p-4 sm:p-5 bg-white">
+      <div class="flex items-center justify-between pb-3 border-b-2 border-slate-100">
+        <div class="flex items-center gap-2">
+          <svg viewBox="0 0 32 32" class="w-5 h-5 sm:w-6 sm:h-6"><rect x="7" y="5" width="18" height="23" rx="3" fill="#f8fafc" stroke="#0f172a" stroke-width="2.2"/><rect x="11" y="3" width="10" height="5" rx="1.5" fill="#94a3b8" stroke="#0f172a" stroke-width="2"/><path d="M11 13h10M11 18h10M11 23h6" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/></svg>
+          <div>
+            <h2 class="cartoon-font text-xl font-black text-slate-900 leading-tight">任务与徽章成就</h2>
+            <p class="text-[11px] font-bold text-slate-500">达成几何体摧毁里程碑与 Boss 讨伐勋章即可领取宝石</p>
+          </div>
+        </div>
+        <button id="btnCloseBadges" type="button" class="rbx-btn bg-rose-500 text-white font-black text-xs px-2.5 py-1 rounded-lg">✕</button>
+      </div>
+
+      <!-- Lifetime Stats Summary -->
+      <div id="lifetimeStatsBar" class="grid grid-cols-2 sm:grid-cols-5 gap-1.5 my-3 bg-slate-100 border-2 border-slate-900 rounded-xl p-2 text-center text-[11px] font-black">
+        <div><div class="text-slate-500 text-[10px]">方块</div><div id="lifeSq" class="text-amber-600 text-sm">0</div></div>
+        <div><div class="text-slate-500 text-[10px]">三角形</div><div id="lifeTri" class="text-rose-600 text-sm">0</div></div>
+        <div><div class="text-slate-500 text-[10px]">五边形</div><div id="lifePent" class="text-blue-600 text-sm">0</div></div>
+        <div><div class="text-slate-500 text-[10px]">讨伐 Boss</div><div id="lifeBoss" class="text-purple-600 text-sm">0</div></div>
+        <div class="col-span-2 sm:col-span-1"><div class="text-slate-500 text-[10px]">击毁坦克</div><div id="lifeKills" class="text-emerald-600 text-sm">0</div></div>
+      </div>
+
+      <!-- Badges List -->
+      <div id="badgesList" class="space-y-2 overflow-y-auto pr-1 no-scrollbar flex-1"></div>
+    </div>
+  </div>
+
+  <!-- ================= DEATH / RESPAWN OVERLAY ================= -->
+  <div id="deathModal" class="hidden fixed inset-0 z-30 flex items-center justify-center p-4 bg-slate-900/65 backdrop-blur-sm">
+    <div class="rbx-card w-full max-w-sm p-5 bg-white text-center">
+      <div class="flex justify-center mb-2"><svg viewBox="0 0 36 36" class="w-8 h-8 sm:w-9 sm:h-9 shrink-0"><rect x="18" y="13" width="15" height="9" rx="4" fill="#7dd3fc" stroke="#0f172a" stroke-width="2.4"/><ellipse cx="32" cy="17.5" rx="2.2" ry="4" fill="#0f172a"/><path d="M5 25a12 12 0 0124 0z" fill="#ef4444" stroke="#0f172a" stroke-width="2.6" stroke-linejoin="round"/></svg></div>
+      <h2 class="cartoon-font text-2xl font-black text-slate-900">坦克被摧毁!</h2>
+      <p id="deathSummaryText" class="text-xs font-bold text-slate-600 mt-1">被击败 • 复活后回归等级 1 重新开始</p>
+
+      <div class="grid grid-cols-3 gap-2 my-4 bg-slate-100 p-2.5 rounded-xl border border-slate-300 text-xs font-black">
+        <div>
+          <div class="text-slate-500 text-[10px]">最高等级</div>
+          <div id="deathLvlStat" class="text-slate-900 text-base">1</div>
+        </div>
+        <div>
+          <div class="text-slate-500 text-[10px]">击败坦克</div>
+          <div id="deathKillsStat" class="text-rose-600 text-base">0</div>
+        </div>
+        <div>
+          <div class="text-slate-500 text-[10px]">本局宝石</div>
+          <div id="deathGemsStat" class="text-amber-600 text-base">+0</div>
+        </div>
+      </div>
+
+      <div class="flex gap-2">
+        <button id="btnBackLobbyFromDeath" type="button" class="rbx-btn flex-1 bg-slate-200 hover:bg-slate-300 text-slate-900 font-black text-sm py-2.5 rounded-xl">返回大厅</button>
+        <button id="btnRespawn" type="button" class="rbx-btn flex-1 bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-sm py-2.5 rounded-xl">立即复活</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Kill Streak Center Announcer Banner (Double Kill -> Rampage -> Godlike) -->
+  <div id="streakBanner" class="hidden pointer-events-none fixed top-24 sm:top-28 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center text-center select-none">
+    <div id="streakBadgePill" class="px-3 py-0.5 rounded-full border-2 border-slate-900 text-[10px] sm:text-xs font-black tracking-widest uppercase bg-amber-300 text-slate-950 shadow">
+      2 KILL STREAK
+    </div>
+    <div id="streakMainTitle" class="cartoon-font outline-text text-3xl sm:text-5xl font-black tracking-tight text-amber-300 mt-0.5">
+      DOUBLE KILL!
+    </div>
+    <div id="streakSubText" class="outline-text-sm text-xs sm:text-sm font-extrabold text-white mt-0.5">
+      连杀奖励 +250 💎
+    </div>
+  </div>
+
+  <!-- Toast Banner -->
+  <div id="toastBanner" class="pointer-events-none fixed top-16 left-1/2 -translate-x-1/2 z-50 opacity-0 transition-opacity duration-300 bg-slate-900 text-white border-2 border-amber-400 px-4 py-2 rounded-full text-xs sm:text-sm font-black shadow-xl">
+    提示消息
+  </div>
+
+  <script>
+    // =========================================================================
+    // 1. AUDIO SYNTHESIZER (Web Audio API - Zero External Files)
+    // =========================================================================
+    const SFX = {
+      ctx: null,
+      muted: false,
+      init() {
+        if (!this.ctx) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (AudioCtx) this.ctx = new AudioCtx();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      },
+      play(type) {
+        if (this.muted || !this.ctx) return;
+        try {
+          const now = this.ctx.currentTime;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+
+          if (type === 'shoot') {
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(240, now);
+            osc.frequency.exponentialRampToValueAtTime(75, now + 0.08);
+            gain.gain.setValueAtTime(0.11, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+            osc.start(now);
+            osc.stop(now + 0.08);
+          } else if (type === 'hit') {
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(140, now);
+            osc.frequency.exponentialRampToValueAtTime(50, now + 0.06);
+            gain.gain.setValueAtTime(0.08, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+            osc.start(now);
+            osc.stop(now + 0.06);
+          } else if (type === 'pop') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(360, now);
+            osc.frequency.exponentialRampToValueAtTime(680, now + 0.09);
+            gain.gain.setValueAtTime(0.12, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+            osc.start(now);
+            osc.stop(now + 0.09);
+          } else if (type === 'levelup') {
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(440, now);
+            osc.frequency.setValueAtTime(554, now + 0.07);
+            osc.frequency.setValueAtTime(659, now + 0.14);
+            osc.frequency.setValueAtTime(880, now + 0.21);
+            gain.gain.setValueAtTime(0.16, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.36);
