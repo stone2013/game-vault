@@ -1,112 +1,50 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<meta name="theme-color" content="#ffffff">
-<title>GAME VAULT · 游戏发现</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#fff">
+<title>GAME VAULT</title>
 <style>
-:root{--bg:#fff;--soft:#f6f7f9;--ink:#24252b;--muted:#777b85;--line:#e9eaee;--blue:#335fff;--blue-soft:#edf1ff;--green:#16a36a;--shadow:0 5px 20px rgba(28,35,55,.08)}
-*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;color:var(--ink);background:var(--bg)}button,input{font:inherit}button{cursor:pointer}
-.topbar{height:68px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:26px;padding:0 28px;position:sticky;top:0;background:#ffffffed;backdrop-filter:blur(16px);z-index:10}
-.logo{display:flex;align-items:center;gap:10px;min-width:205px;font-weight:900;font-size:19px;letter-spacing:.045em}.logo-mark{width:34px;height:34px;background:#252a35;color:#fff;border-radius:10px;display:grid;place-items:center;font-size:19px;transform:rotate(-5deg)}.toplinks{display:flex;align-items:center;gap:23px;white-space:nowrap}.toplinks a{font-size:13px;font-weight:650;text-decoration:none;color:#5c606a}.toplinks a.active,.toplinks a:hover{color:var(--blue)}
-.search-wrap{margin-left:auto;position:relative;width:min(390px,36vw)}.search-wrap span{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:17px;color:#8a8f9b}.search{width:100%;height:40px;border:1px solid #e4e6eb;background:#f7f8fa;border-radius:12px;padding:0 15px 0 42px;outline:none;font-size:13px}.search:focus{border-color:#9eafff;background:white;box-shadow:0 0 0 3px #335fff12}
-.layout{display:grid;grid-template-columns:210px minmax(0,1fr);max-width:1600px;margin:auto}.sidebar{border-right:1px solid var(--line);min-height:calc(100vh - 68px);padding:24px 15px;position:sticky;top:68px;height:calc(100vh - 68px);overflow:auto}.side-label{font-size:10px;letter-spacing:.13em;color:#a0a3ab;font-weight:800;padding:13px 12px 8px}.side-link{height:42px;display:flex;align-items:center;gap:13px;padding:0 12px;border-radius:10px;color:#626671;text-decoration:none;font-size:13px;font-weight:620;margin:3px 0}.side-link .ico{width:20px;text-align:center;font-size:17px}.side-link.active{background:var(--blue-soft);color:var(--blue)}.side-link:hover{background:#f5f6f9}.side-note{margin:28px 7px 0;padding:14px;background:#f7f8fb;border-radius:13px;color:#777d89;font-size:11px;line-height:1.7}
-main{min-width:0;padding:30px clamp(20px,3.2vw,48px) 60px;max-width:1400px;width:100%}.welcome{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin:5px 0 29px}.welcome h1{font-size:30px;letter-spacing:-.04em;margin:0 0 7px}.welcome p{font-size:13px;color:var(--muted);margin:0}.library-stat{font-size:12px;color:#858a95;background:#f7f8fa;border:1px solid var(--line);padding:10px 13px;border-radius:11px;white-space:nowrap}.library-stat b{color:#282c35;font-size:16px;margin-right:5px}
-.section{margin:30px 0 0}.section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:15px}.section-head h2{font-size:18px;margin:0;font-weight:800;letter-spacing:-.025em}.section-head p{font-size:11px;color:#989ca5;margin:5px 0 0}.see-all{border:0;background:none;color:#69707c;font-size:12px;font-weight:700;padding:7px 0}.see-all:hover{color:var(--blue)}
-.game-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:22px 17px}.game-card{min-width:0;cursor:pointer;position:relative}.thumb{aspect-ratio:1.42;border-radius:13px;overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;transition:transform .18s,box-shadow .18s;box-shadow:0 1px 3px #17203312}.game-card:hover .thumb{transform:translateY(-3px);box-shadow:var(--shadow)}.thumb.crash{background:linear-gradient(145deg,#c7d9ef 0%,#8da9ca 100%)}.thumb.racer{background:linear-gradient(145deg,#b9eadb 0%,#66bba6 100%)}
-.thumb:before{content:"";position:absolute;width:70%;height:70%;border:2px solid #ffffff72;border-radius:50%;transform:rotate(-22deg);box-shadow:0 0 0 15px #ffffff20,0 0 0 30px #ffffff12}.thumb.racer:before{width:90%;height:40%;border-width:10px;transform:rotate(-18deg)}.thumb:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,#18223640,transparent 45%)}.thumb-emoji{font-size:clamp(46px,5.3vw,72px);z-index:1;filter:drop-shadow(0 10px 7px #24364a55);transform:rotate(-8deg)}.thumb-stamp{position:absolute;z-index:2;top:10px;left:11px;color:#26364a;background:#ffffffbd;border-radius:6px;padding:5px 8px;font-size:9px;font-weight:850;letter-spacing:.1em;backdrop-filter:blur(5px)}.thumb-play{position:absolute;z-index:3;right:11px;bottom:10px;width:32px;height:32px;border-radius:50%;background:#ffffffed;color:#303b58;display:grid;place-items:center;font-size:14px;opacity:0;transform:translateY(4px);transition:.18s}.game-card:hover .thumb-play{opacity:1;transform:none}
-.game-info{padding:10px 2px 0}.game-title{font-size:13px;font-weight:780;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0 0 5px}.game-meta{display:flex;align-items:center;gap:8px;color:#9297a1;font-size:10px}.game-meta .dot{width:4px;height:4px;border-radius:50%;background:#b9bdc5}.pill{margin-left:auto;background:#f0f2f6;color:#737987;padding:4px 7px;border-radius:5px;font-size:9px;white-space:nowrap}
-.horizontal-row{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(190px,1fr);grid-template-columns:repeat(4,minmax(0,1fr));gap:17px}.recent-card{background:#f8f9fb;border:1px solid #eef0f3;border-radius:13px;padding:10px;display:flex;align-items:center;gap:11px;cursor:pointer;min-width:0}.recent-card:hover{background:#f1f4ff;border-color:#dce3ff}.recent-mini{width:66px;height:58px;flex:0 0 66px;border-radius:9px;display:grid;place-items:center;font-size:30px}.recent-mini.crash{background:#cbd9ed}.recent-mini.racer{background:#bce8da}.recent-text{min-width:0}.recent-text strong{display:block;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.recent-text span{font-size:10px;color:#9297a1;display:block;margin-top:5px}
-.empty{padding:18px 20px;border:1px dashed #dfe2e8;border-radius:12px;color:#8a909b;font-size:12px;background:#fafbfc}
-.no-results{display:none;padding:35px 15px;text-align:center;color:#9297a1;background:#fafbfc;border:1px dashed #e1e4ea;border-radius:13px;font-size:13px}
-footer{border-top:1px solid var(--line);margin-top:52px;padding:20px 0;color:#a0a4ad;font-size:10px;display:flex;justify-content:space-between;gap:10px}
-#player{position:fixed;inset:0;background:#fff;z-index:30;display:none;flex-direction:column}#player.active{display:flex}.playerbar{height:58px;flex:0 0 58px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 18px}.player-title{font-size:13px;font-weight:800}.back{border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 12px;font-size:12px;color:#505765}.back:hover{background:#f4f6fa}#gameframe{width:100%;height:calc(100% - 58px);border:0;background:#111}
-.mobile-nav{display:none}
-@media(max-width:1100px){.game-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.logo{min-width:170px}.toplinks{gap:15px}}
-@media(max-width:760px){.topbar{height:60px;padding:0 14px;gap:12px}.logo{min-width:0;font-size:16px}.logo-mark{width:31px;height:31px}.toplinks{display:none}.search-wrap{width:auto;flex:1}.search{height:37px}.layout{display:block}.sidebar{display:none}main{padding:24px 15px 90px}.welcome{align-items:flex-start;margin-bottom:23px}.welcome h1{font-size:25px}.welcome p{font-size:11px;line-height:1.6;max-width:240px}.library-stat{font-size:10px;padding:8px}.library-stat b{font-size:14px}.game-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:19px 12px}.thumb{border-radius:11px;aspect-ratio:1.22}.thumb-emoji{font-size:55px}.section{margin-top:26px}.section-head h2{font-size:16px}.horizontal-row{grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-flow:row;gap:9px}.recent-card{padding:8px;gap:8px}.recent-mini{width:48px;height:48px;flex-basis:48px;font-size:24px}.recent-text strong{font-size:10px}.recent-text span{font-size:9px}.mobile-nav{display:flex;position:fixed;bottom:0;left:0;right:0;height:62px;padding-bottom:env(safe-area-inset-bottom);background:#ffffffed;backdrop-filter:blur(14px);border-top:1px solid var(--line);z-index:12;justify-content:space-around;align-items:center}.mobile-nav a{font-size:9px;color:#777d88;text-decoration:none;text-align:center;display:flex;flex-direction:column;gap:3px;min-width:55px}.mobile-nav a b{font-size:18px;font-weight:400}.mobile-nav a.active{color:var(--blue)}footer{font-size:9px;flex-direction:column}.playerbar{height:54px;flex-basis:54px}#gameframe{height:calc(100% - 54px)}}
-@media(max-width:380px){.library-stat{display:none}.thumb-stamp{font-size:8px}.game-title{font-size:12px}}
+:root{--ink:#23252a;--muted:#60646c;--line:#e7e7e9;--hover:#f3f3f5}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#fff;color:var(--ink);font-family:Arial,"PingFang SC","Microsoft YaHei",sans-serif}button,input{font:inherit}
+.shell{min-height:100vh}.rail{position:fixed;inset:0 auto 0 0;width:72px;border-right:1px solid #eee;background:#fff;display:flex;align-items:center;flex-direction:column;gap:9px;padding:13px 7px;z-index:5}.navitem{width:58px;height:53px;border:0;background:transparent;border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:#4d5057;font-size:11px;text-decoration:none}.navitem .ico{font-size:21px;line-height:23px}.navitem.active,.navitem:hover{background:#f1f1f3;color:#191a1d}.rail-spacer{flex:1}
+.top{height:64px;position:sticky;top:0;margin-left:72px;padding:0 26px;display:flex;align-items:center;gap:20px;background:#ffffffed;backdrop-filter:blur(12px);z-index:4}.top h1{font-size:25px;margin:0;font-weight:750;min-width:170px}.searchbox{height:38px;width:min(360px,42vw);margin:auto;position:relative}.searchbox span{position:absolute;left:12px;top:8px;font-size:19px;color:#555}.searchbox input{width:100%;height:100%;border:0;outline:0;border-radius:10px;background:#f0f0f2;padding:0 14px 0 39px;font-size:14px}.searchbox input:focus{background:#eaeaec}.profile{display:flex;align-items:center;gap:15px;font-size:20px}.avatar{width:29px;height:29px;border-radius:50%;background:linear-gradient(135deg,#f7c7b1,#8c5b46);display:grid;place-items:center;font-size:17px}
+main{margin-left:72px;padding:4px 28px 60px;max-width:1700px}.featured{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px;margin:0 0 31px}.feature{min-width:0;cursor:pointer}.art{height:auto;aspect-ratio:1.78;border-radius:7px;overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;color:#fff;isolation:isolate}.art:before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,#ffffff24,transparent 55%,#0003);z-index:-1}.art:after{content:"";position:absolute;width:58%;height:130%;right:-9%;top:-30%;border-radius:50%;background:#ffffff20;transform:rotate(28deg);z-index:-1}.art.crash{background:linear-gradient(135deg,#18385d,#4f86a8 55%,#182d47)}.art.racer{background:linear-gradient(135deg,#087c70,#45c3a0 55%,#164d6b)}.art .emoji{font-size:clamp(54px,7vw,92px);filter:drop-shadow(0 7px 5px #0005);transform:rotate(-8deg)}.art .stamp{position:absolute;left:13px;top:12px;border-radius:20px;background:#fff;color:#222;padding:5px 10px;font-size:11px;font-weight:700}.art .slogan{position:absolute;bottom:13px;left:15px;font-size:clamp(14px,2vw,23px);font-weight:900;text-shadow:0 2px 4px #0008;letter-spacing:.02em}.feature h3{font-size:14px;margin:10px 0 4px;font-weight:700}.feature p{font-size:13px;color:#686b72;margin:0}
+.section{margin-top:30px}.section h2{font-size:18px;margin:0 0 15px;font-weight:750}.grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:15px 20px}.game{min-width:0;cursor:pointer}.cover{aspect-ratio:1.62;border-radius:7px;overflow:hidden;position:relative;display:grid;place-items:center;color:#fff;transition:filter .15s}.game:hover .cover{filter:brightness(.94)}.cover .big{font-size:clamp(43px,5vw,68px);filter:drop-shadow(0 5px 4px #0004)}.cover.crash{background:linear-gradient(145deg,#5c9bc5,#163c68 70%)}.cover.racer{background:linear-gradient(145deg,#a7e7d0,#168b7b 65%,#14536a)}.cover .tiny{position:absolute;left:9px;top:8px;background:#ffffffdc;color:#222;border-radius:4px;padding:4px 6px;font-size:9px;font-weight:800}.game h3{font-size:13px;line-height:1.3;margin:9px 0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.rating{font-size:12px;color:#5d6067}.rating b{font-size:13px;margin-right:4px}.game[hidden],.feature[hidden]{display:none!important}.empty{color:#777;background:#f6f6f7;padding:25px;border-radius:8px;font-size:13px}
+#player{display:none;position:fixed;inset:0;background:#fff;z-index:20;flex-direction:column}#player.open{display:flex}.playerbar{height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid var(--line)}.playerbar button{border:0;background:#eee;border-radius:7px;padding:8px 12px}#frame{border:0;flex:1;width:100%;background:#111}
+@media(max-width:1050px){.featured{grid-template-columns:repeat(2,minmax(0,1fr))}.grid{grid-template-columns:repeat(4,minmax(0,1fr))}.top h1{min-width:110px}}
+@media(max-width:720px){.rail{width:58px;padding:9px 4px}.navitem{width:49px;height:49px;font-size:10px}.top{margin-left:58px;height:57px;padding:0 12px;gap:10px}.top h1{font-size:21px;min-width:65px}.searchbox{width:auto;flex:1}.profile{gap:8px;font-size:17px}.profile .hide{display:none}main{margin-left:58px;padding:4px 12px 35px}.featured{gap:12px;margin-bottom:25px}.art{border-radius:6px}.feature h3{font-size:12px;margin-top:7px}.feature p{font-size:11px}.section{margin-top:23px}.section h2{font-size:16px;margin-bottom:12px}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:17px 12px}.cover{aspect-ratio:1.55}.game h3{font-size:12px}.rating{font-size:11px}}
+@media(max-width:390px){.featured{grid-template-columns:1fr}.art{aspect-ratio:1.9}.top h1{min-width:54px;font-size:19px}.profile{display:none}}
 </style>
 </head>
 <body>
-<header class="topbar">
-  <div class="logo"><div class="logo-mark">G</div><span>GAME VAULT</span></div>
-  <nav class="toplinks"><a class="active" href="#home">首页</a><a href="#discover">发现游戏</a><a href="#recentSection">最近游玩</a></nav>
-  <label class="search-wrap"><span>⌕</span><input id="searchInput" class="search" type="search" placeholder="搜索游戏名称或类型..." autocomplete="off"></label>
-</header>
-<div class="layout" id="home">
-  <aside class="sidebar">
-    <div class="side-label">游戏库</div>
-    <a class="side-link active" href="#home"><span class="ico">⌂</span>首页</a>
-    <a class="side-link" href="#discover"><span class="ico">◈</span>发现游戏</a>
-    <a class="side-link" href="#recentSection"><span class="ico">◷</span>最近游玩</a>
-    <div class="side-label" style="margin-top:19px">分类</div>
-    <a class="side-link" href="#discover" data-filter="全部"><span class="ico">▦</span>全部游戏</a>
-    <a class="side-link" href="#discover" data-filter="车祸模拟"><span class="ico">🚙</span>车祸模拟</a>
-    <a class="side-link" href="#discover" data-filter="建路竞速"><span class="ico">🏎️</span>竞速游戏</a>
-    <div class="side-note">这里收藏着你制作和收集的游戏。新作品可以继续加入 GAME VAULT。</div>
-  </aside>
-  <main>
-    <section class="welcome">
-      <div><h1>欢迎回来！</h1><p>今天想玩点什么？你的游戏世界已经准备好了。</p></div>
-      <div class="library-stat"><b id="gameCount">02</b> 款游戏</div>
-    </section>
-
-    <section class="section" id="recentSection">
-      <div class="section-head"><div><h2>继续游玩</h2><p>从上次离开的地方继续</p></div><button class="see-all" onclick="document.getElementById('discover').scrollIntoView({behavior:'smooth'})">查看全部　›</button></div>
-      <div id="recentList" class="horizontal-row"><div class="empty">还没有游玩记录，开始你的第一局吧！</div></div>
-    </section>
-
-    <section class="section" id="discover">
-      <div class="section-head"><div><h2>你的游戏库</h2><p>所有收藏的游戏都在这里</p></div><span id="resultCount" style="font-size:11px;color:#969ba5">2 款体验</span></div>
-      <div class="game-grid" id="gameGrid">
-        <article class="game-card" data-id="crash" data-tags="车祸模拟 物理 3D 汽车 碰撞" onclick="launchGame('crash')">
-          <div class="thumb crash"><span class="thumb-stamp">3D PHYSICS</span><div class="thumb-emoji">🚙</div><span class="thumb-play">▶</span></div>
-          <div class="game-info"><h3 class="game-title">3D 低多边形车祸模拟器</h3><div class="game-meta"><span>🚘 车祸模拟</span><i class="dot"></i><span>3D</span><span class="pill">可游玩</span></div></div>
-        </article>
-        <article class="game-card" data-id="racer" data-tags="建路竞速 竞速 3D 赛车 机关 搭建" onclick="launchGame('racer')">
-          <div class="thumb racer"><span class="thumb-stamp">BUILD & RACE</span><div class="thumb-emoji">🏎️</div><span class="thumb-play">▶</span></div>
-          <div class="game-info"><h3 class="game-title">地图搭建中</h3><div class="game-meta"><span>🏁 建路竞速</span><i class="dot"></i><span>3D</span><span class="pill">可游玩</span></div></div>
-        </article>
-      </div>
-      <div id="noResults" class="no-results">没有找到匹配的游戏。试试其他关键词吧。</div>
-    </section>
-
-    <footer><span>GAME VAULT · PERSONAL GAME COLLECTION</span><span>静态游戏库 · 游玩记录保存在当前浏览器</span></footer>
-  </main>
-</div>
-<nav class="mobile-nav"><a class="active" href="#home"><b>⌂</b>首页</a><a href="#discover"><b>◈</b>发现</a><a href="#recentSection"><b>◷</b>最近</a></nav>
-<div id="player" aria-hidden="true">
-  <div class="playerbar"><button class="back" onclick="closeGame()">← 返回游戏库</button><div class="player-title" id="playerTitle">正在启动游戏</div><span style="width:88px"></span></div>
-  <iframe id="gameframe" title="游戏画面" allow="fullscreen; autoplay; gamepad"></iframe>
-</div>
+<div class="shell">
+<aside class="rail">
+<a class="navitem active" href="#home"><span class="ico">◆</span>Home</a>
+<a class="navitem" href="#recommended"><span class="ico">▤</span>Charts</a>
+<a class="navitem" href="#recommended"><span class="ico">◉</span>Avatar</a>
+<a class="navitem" href="#featured"><span class="ico">♧</span>Party</a>
+<a class="navitem" href="#recent"><span class="ico">•••</span>More</a>
+<div class="rail-spacer"></div><span style="font-size:20px;color:#252525">▰</span>
+</aside>
+<header class="top" id="home"><h1>Home</h1><label class="searchbox"><span>⌕</span><input id="search" type="search" placeholder="Search" autocomplete="off"></label><div class="profile"><span class="avatar">🧑🏻</span><span class="hide" style="width:66px;height:13px;background:#171717"></span><span>⬡</span><span>♧</span></div></header>
+<main>
+<section class="featured" id="featured">
+<article class="feature" data-search="3d低多边形车祸模拟器 crash simulator 汽车 碰撞"><div class="art crash" onclick="play('crash')"><span class="stamp">Original</span><span class="emoji">🚙</span><span class="slogan">CRASH TEST!</span></div><h3>3D 低多边形车祸模拟器</h3><p>碰撞、变形与零件脱落</p></article>
+<article class="feature" data-search="地图搭建中 建路 竞速 race build"><div class="art racer" onclick="play('racer')"><span class="stamp">Featured</span><span class="emoji">🏎️</span><span class="slogan">BUILD YOUR TRACK</span></div><h3>地图搭建中</h3><p>实时建路与机关乱斗竞速</p></article>
+</section>
+<section class="section" id="recommended"><h2>Recommended For You</h2><div class="grid" id="grid">
+<article class="game" data-search="3d低多边形车祸模拟器 crash simulator 车祸 汽车 模拟"><div class="cover crash" onclick="play('crash')"><span class="tiny">3D PHYSICS</span><span class="big">🚘</span></div><h3>3D 低多边形车祸模拟器</h3><div class="rating"><b>👍</b> Original Game</div></article>
+<article class="game" data-search="地图搭建中 建路 竞速 赛车 机关"><div class="cover racer" onclick="play('racer')"><span class="tiny">BUILD & RACE</span><span class="big">🏁</span></div><h3>地图搭建中</h3><div class="rating"><b>👍</b> Original Game</div></article>
+</div><div id="none" class="empty" hidden>No games found.</div></section>
+<section class="section" id="recent"><h2>Continue Playing</h2><div id="recentGames" class="grid"><div class="empty">Play a game and it will appear here.</div></div></section>
+</main></div>
+<div id="player"><div class="playerbar"><button onclick="closeGame()">← Back to Home</button><strong id="playing">GAME VAULT</strong><span></span></div><iframe id="frame" allow="fullscreen; autoplay; gamepad" title="Game"></iframe></div>
 <script>
-const games={
- crash:{title:"3D 低多边形车祸模拟器",src:"games/3D低多边形车祸模拟器.html",category:"车祸模拟",icon:"🚙"},
- racer:{title:"地图搭建中",src:"games/地图搭建中___网页版实时建路与机关乱斗竞速.html",category:"建路竞速",icon:"🏎️"}
-};
-const storeKey="gameVaultRecent_v2";
-function getRecent(){try{return JSON.parse(localStorage.getItem(storeKey)||"[]").filter(x=>games[x.id])}catch(e){return []}}
-function saveRecent(id){let items=getRecent().filter(x=>x.id!==id);items.unshift({id,time:Date.now()});localStorage.setItem(storeKey,JSON.stringify(items.slice(0,8)));renderRecent()}
-function formatTime(t){const d=new Date(t),now=new Date();if(d.toDateString()===now.toDateString())return "今天 "+d.toLocaleTimeString("zh-CN",{hour:"2-digit",minute:"2-digit"});return d.toLocaleDateString("zh-CN",{month:"numeric",day:"numeric"})}
-function renderRecent(){
- const box=document.getElementById("recentList"),items=getRecent();
- if(!items.length){box.innerHTML='<div class="empty">还没有游玩记录，开始你的第一局吧！</div>';return}
- box.innerHTML=items.slice(0,4).map(x=>{const g=games[x.id];return '<article class="recent-card" data-game="'+x.id+'" onclick="launchGame(this.dataset.game)"><div class="recent-mini '+x.id+'">'+g.icon+'</div><div class="recent-text"><strong>'+g.title+'</strong><span>上次游玩 · '+formatTime(x.time)+'</span></div></article>'}).join("");
-}
-function filterGames(){
- const q=document.getElementById("searchInput").value.trim().toLowerCase();let shown=0;
- document.querySelectorAll(".game-card[data-id]").forEach(card=>{const id=card.dataset.id,g=games[id];const hay=(g.title+" "+g.category+" "+card.dataset.tags).toLowerCase();const match=hay.includes(q);card.style.display=match?"":"none";if(match)shown++});
- document.getElementById("resultCount").textContent=shown+" 款体验";
- document.getElementById("noResults").style.display=shown?"none":"block";
-}
-function launchGame(id){const game=games[id];if(!game)return;saveRecent(id);document.getElementById("playerTitle").textContent=game.title;const player=document.getElementById("player");player.classList.add("active");player.setAttribute("aria-hidden","false");document.body.style.overflow="hidden";document.getElementById("gameframe").src=game.src}
-function closeGame(){const player=document.getElementById("player");player.classList.remove("active");player.setAttribute("aria-hidden","true");document.getElementById("gameframe").src="about:blank";document.body.style.overflow=""}
-document.getElementById("searchInput").addEventListener("input",filterGames);
-document.querySelectorAll("[data-filter]").forEach(el=>el.addEventListener("click",()=>{const value=el.dataset.filter;document.getElementById("searchInput").value=value==="全部"?"":value;filterGames()}));
-document.addEventListener("keydown",e=>{if(e.key==="Escape"&&document.getElementById("player").classList.contains("active"))closeGame()});
-document.getElementById("gameCount").textContent=String(Object.keys(games).length).padStart(2,"0");
-renderRecent();
+const games={crash:{title:"3D 低多边形车祸模拟器",src:"games/3D低多边形车祸模拟器.html",icon:"🚙"},racer:{title:"地图搭建中",src:"games/地图搭建中___网页版实时建路与机关乱斗竞速.html",icon:"🏎️"}};
+function play(id){const g=games[id];if(!g)return;let a=JSON.parse(localStorage.getItem("gvRecent")||"[]").filter(x=>x!==id);a.unshift(id);localStorage.setItem("gvRecent",JSON.stringify(a.slice(0,6)));document.getElementById("playing").textContent=g.title;document.getElementById("frame").src=g.src;document.getElementById("player").classList.add("open");renderRecent()}
+function closeGame(){document.getElementById("player").classList.remove("open");document.getElementById("frame").src="about:blank"}
+function renderRecent(){let a=[];try{a=JSON.parse(localStorage.getItem("gvRecent")||"[]")}catch(e){}const box=document.getElementById("recentGames");if(!a.length){box.innerHTML='<div class="empty">Play a game and it will appear here.</div>';return}box.innerHTML=a.filter(id=>games[id]).map(id=>'<article class="game"><div class="cover '+id+'" onclick="play(\''+id+'\')"><span class="big">'+games[id].icon+'</span></div><h3>'+games[id].title+'</h3><div class="rating">Continue playing</div></article>').join("")}
+document.getElementById("search").addEventListener("input",e=>{let q=e.target.value.trim().toLowerCase(),n=0;document.querySelectorAll("[data-search]").forEach(el=>{let ok=el.dataset.search.toLowerCase().includes(q);el.hidden=!ok;if(ok)n++});document.getElementById("none").hidden=n>0});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeGame()});renderRecent();
 </script>
-</body>
-</html>
+</body></html>
