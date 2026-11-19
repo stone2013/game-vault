@@ -998,3 +998,4258 @@
             osc.frequency.setValueAtTime(880, now + 0.21);
             gain.gain.setValueAtTime(0.16, now);
             gain.gain.exponentialRampToValueAtTime(0.001, now + 0.36);
+            osc.start(now);
+            osc.stop(now + 0.36);
+          } else if (type === 'kill') {
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(180, now);
+            osc.frequency.exponentialRampToValueAtTime(42, now + 0.25);
+            gain.gain.setValueAtTime(0.18, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+            osc.start(now);
+            osc.stop(now + 0.25);
+          } else if (type === 'boss') {
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(110, now);
+            osc.frequency.linearRampToValueAtTime(65, now + 0.45);
+            gain.gain.setValueAtTime(0.22, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.48);
+            osc.start(now);
+            osc.stop(now + 0.48);
+          } else if (type === 'streak') {
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(330, now);
+            osc.frequency.setValueAtTime(440, now + 0.06);
+            osc.frequency.setValueAtTime(554.37, now + 0.12);
+            osc.frequency.setValueAtTime(659.25, now + 0.18);
+            osc.frequency.exponentialRampToValueAtTime(880, now + 0.38);
+            gain.gain.setValueAtTime(0.19, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.42);
+            osc.start(now);
+            osc.stop(now + 0.42);
+          }
+        } catch (e) {}
+      }
+    };
+
+    // =========================================================================
+    // 2. TANK CLASSES, SKILL TREE & 7x3 CODES DATA
+    // =========================================================================
+    // Barrel definition: { angle (rad), offset (lateral -1..1), length, width, delay, dmgMul, speedMul, spread, flame, rail }
+    const TANK_CLASSES = {
+      basic: {
+        id: 'basic', name: 'Basic Tank', tier: 0,
+        desc: '均衡单管初始坦克',
+        barrels: [{ angle: 0, offset: 0, length: 1.35, width: 0.44, delay: 0, dmgMul: 1, speedMul: 1, spread: 0.03 }]
+      },
+      // Tier 1 (Lv 10)
+      twin: {
+        id: 'twin', name: 'Twin 双管', tier: 1,
+        barrels: [
+          { angle: 0, offset: -0.38, length: 1.32, width: 0.36, delay: 0, dmgMul: 0.68, speedMul: 1, spread: 0.04 },
+          { angle: 0, offset:  0.38, length: 1.32, width: 0.36, delay: 0.5, dmgMul: 0.68, speedMul: 1, spread: 0.04 }
+        ]
+      },
+      sniper: {
+        id: 'sniper', name: 'Sniper 狙击', tier: 1, fovMul: 1.18,
+        barrels: [{ angle: 0, offset: 0, length: 1.85, width: 0.36, delay: 0, dmgMul: 1.65, speedMul: 1.55, spread: 0.005, reloadMul: 1.45 }]
+      },
+      flank: {
+        id: 'flank', name: 'Flank 侧卫', tier: 1,
+        barrels: [
+          { angle: 0, offset: 0, length: 1.35, width: 0.42, delay: 0, dmgMul: 0.9, speedMul: 1, spread: 0.03 },
+          { angle: Math.PI, offset: 0, length: 1.15, width: 0.38, delay: 0.5, dmgMul: 0.75, speedMul: 1, spread: 0.03 }
+        ]
+      },
+      pounder: {
+        id: 'pounder', name: 'Pounder 重炮', tier: 1,
+        barrels: [{ angle: 0, offset: 0, length: 1.4, width: 0.68, delay: 0, dmgMul: 2.1, speedMul: 0.82, spread: 0.02, reloadMul: 1.7, bulletSizeMul: 1.45 }]
+      },
+      flame: {
+        id: 'flame', name: 'Flame 烈焰 (社区)', tier: 1, groupRequired: true,
+        barrels: [{ angle: 0, offset: 0, length: 1.25, width: 0.56, delay: 0, dmgMul: 0.48, speedMul: 0.9, spread: 0.18, reloadMul: 0.38, flame: true }]
+      },
+
+      // Tier 2 (Lv 25)
+      triple: {
+        id: 'triple', name: 'Triple Shot 散射', tier: 2,
+        barrels: [
+          { angle: -0.26, offset: 0, length: 1.3, width: 0.36, delay: 0.15, dmgMul: 0.72, speedMul: 1, spread: 0.03 },
+          { angle:  0.26, offset: 0, length: 1.3, width: 0.36, delay: 0.15, dmgMul: 0.72, speedMul: 1, spread: 0.03 },
+          { angle:  0,    offset: 0, length: 1.42, width: 0.38, delay: 0,    dmgMul: 0.8,  speedMul: 1, spread: 0.02 }
+        ]
+      },
+      railgun: {
+        id: 'railgun', name: 'Railgun 电磁炮', tier: 2, fovMul: 1.25,
+        barrels: [
+          { angle: 0, offset: 0, length: 2.05, width: 0.30, delay: 0, dmgMul: 2.55, speedMul: 1.95, spread: 0.002, reloadMul: 1.85, rail: true }
+        ]
+      },
+      quad: {
+        id: 'quad', name: 'Quad Tank 四方', tier: 2,
+        barrels: [
+          { angle: 0,           offset: 0, length: 1.32, width: 0.38, delay: 0,   dmgMul: 0.8, speedMul: 1, spread: 0.03 },
+          { angle: Math.PI/2,   offset: 0, length: 1.32, width: 0.38, delay: 0.25,dmgMul: 0.8, speedMul: 1, spread: 0.03 },
+          { angle: Math.PI,     offset: 0, length: 1.32, width: 0.38, delay: 0.5, dmgMul: 0.8, speedMul: 1, spread: 0.03 },
+          { angle: -Math.PI/2,  offset: 0, length: 1.32, width: 0.38, delay: 0.75,dmgMul: 0.8, speedMul: 1, spread: 0.03 }
+        ]
+      },
+      destroyer: {
+        id: 'destroyer', name: 'Destroyer 毁灭者', tier: 2,
+        barrels: [{ angle: 0, offset: 0, length: 1.48, width: 0.88, delay: 0, dmgMul: 3.4, speedMul: 0.78, spread: 0.01, reloadMul: 2.25, bulletSizeMul: 1.85 }]
+      },
+      spiker: {
+        id: 'spiker', name: 'Spiker 尖刺战车', tier: 2, spikes: 8, bodyDmgBonus: 1.55, speedBonus: 1.15,
+        barrels: [{ angle: 0, offset: 0, length: 1.15, width: 0.4, delay: 0, dmgMul: 0.85, speedMul: 1, spread: 0.05 }]
+      },
+
+      // Tier 3 (Lv 45)
+      penta: {
+        id: 'penta', name: 'Penta 五重散射', tier: 3, rearArmor: true,
+        barrels: [
+          { angle: -0.44, offset: 0, length: 1.18, width: 0.34, delay: 0.3,  dmgMul: 0.65, speedMul: 0.96, spread: 0.03 },
+          { angle:  0.44, offset: 0, length: 1.18, width: 0.34, delay: 0.3,  dmgMul: 0.65, speedMul: 0.96, spread: 0.03 },
+          { angle: -0.22, offset: 0, length: 1.30, width: 0.35, delay: 0.15, dmgMul: 0.70, speedMul: 1.0,  spread: 0.03 },
+          { angle:  0.22, offset: 0, length: 1.30, width: 0.35, delay: 0.15, dmgMul: 0.70, speedMul: 1.0,  spread: 0.03 },
+          { angle:  0,    offset: 0, length: 1.44, width: 0.38, delay: 0,    dmgMul: 0.78, speedMul: 1.04, spread: 0.02 }
+        ]
+      },
+      octo: {
+        id: 'octo', name: 'Octo 八方弹幕', tier: 3,
+        barrels: Array.from({ length: 8 }, (_, i) => ({
+          angle: (i * Math.PI) / 4, offset: 0, length: 1.28, width: 0.35, delay: (i % 2) * 0.5, dmgMul: 0.72, speedMul: 0.95, spread: 0.03
+        }))
+      },
+      stormblast: {
+        id: 'stormblast', name: 'Stormblast 风暴', tier: 3, rearArmor: true,
+        barrels: [
+          { angle: 0, offset: -0.45, length: 1.28, width: 0.32, delay: 0.2, dmgMul: 0.58, speedMul: 1.12, spread: 0.05, reloadMul: 0.65 },
+          { angle: 0, offset:  0.45, length: 1.28, width: 0.32, delay: 0.4, dmgMul: 0.58, speedMul: 1.12, spread: 0.05, reloadMul: 0.65 },
+          { angle: 0, offset:  0,    length: 1.50, width: 0.44, delay: 0,   dmgMul: 0.85, speedMul: 1.18, spread: 0.03, reloadMul: 0.65 }
+        ]
+      },
+      annihilator: {
+        id: 'annihilator', name: 'Annihilator 歼星炮', tier: 3, rearArmor: true,
+        barrels: [{ angle: 0, offset: 0, length: 1.55, width: 1.08, delay: 0, dmgMul: 4.5, speedMul: 0.76, spread: 0.01, reloadMul: 2.5, bulletSizeMul: 2.25 }]
+      },
+
+      // Tier 4 / Lv 75 & Exotic / Secret Tanks (Matches LVL 99 Multi-Barrel Fan Image!)
+      spread99: {
+        id: 'spread99', name: 'Hyper Spread [LVL 99]', tier: 4, rearArmor: true,
+        barrels: [-0.60, -0.45, -0.30, -0.15, 0, 0.15, 0.30, 0.45, 0.60].map((ang, idx) => ({
+          angle: ang, offset: 0, length: 1.36 - Math.abs(ang) * 0.22, width: 0.33,
+          delay: (Math.abs(idx - 4) * 0.08), dmgMul: 0.66, speedMul: 1.05, spread: 0.02
+        }))
+      },
+
+      // Chest / Trading Exotic & Secret Tanks
+      snowflake: {
+        id: 'snowflake', name: '❄️ Snowflake (Exotic)', tier: 4, rarity: 'EXOTIC', spikes: 6,
+        barrels: Array.from({ length: 6 }, (_, i) => ({
+          angle: (i * Math.PI) / 3, offset: 0, length: 1.34, width: 0.34, delay: (i % 2) * 0.35, dmgMul: 0.85, speedMul: 1.08, spread: 0.02, freeze: true
+        }))
+      },
+      suppress: {
+        id: 'suppress', name: '⚡ Suppress (Exotic)', tier: 4, rarity: 'EXOTIC', rearArmor: true,
+        barrels: [
+          { angle: 0, offset: -0.34, length: 1.75, width: 0.32, delay: 0,   dmgMul: 1.35, speedMul: 1.5, spread: 0.01, reloadMul: 0.85, rail: true },
+          { angle: 0, offset:  0.34, length: 1.75, width: 0.32, delay: 0.5, dmgMul: 1.35, speedMul: 1.5, spread: 0.01, reloadMul: 0.85, rail: true }
+        ]
+      },
+      delta: {
+        id: 'delta', name: '🔺 Delta (Secret)', tier: 4, rarity: 'SECRET', rearArmor: true, speedBonus: 1.2,
+        barrels: [
+          { angle: 0,     offset: 0,     length: 1.58, width: 0.48, delay: 0,   dmgMul: 1.35, speedMul: 1.25, spread: 0.02, reloadMul: 0.72 },
+          { angle: -0.18, offset: -0.25, length: 1.35, width: 0.36, delay: 0.2, dmgMul: 0.85, speedMul: 1.2,  spread: 0.02, reloadMul: 0.72 },
+          { angle:  0.18, offset:  0.25, length: 1.35, width: 0.36, delay: 0.2, dmgMul: 0.85, speedMul: 1.2,  spread: 0.02, reloadMul: 0.72 },
+          { angle: Math.PI * 0.88, offset: 0, length: 1.15, width: 0.36, delay: 0.4, dmgMul: 0.7, speedMul: 1.1, spread: 0.04, reloadMul: 0.72 },
+          { angle: -Math.PI * 0.88, offset: 0, length: 1.15, width: 0.36, delay: 0.4, dmgMul: 0.7, speedMul: 1.1, spread: 0.04, reloadMul: 0.72 }
+        ]
+      },
+      ultraspiker: {
+        id: 'ultraspiker', name: '⚙️ UltraSpiker (Secret)', tier: 4, rarity: 'SECRET', spikes: 12, bodyDmgBonus: 2.1, speedBonus: 1.28,
+        barrels: [
+          { angle: 0, offset: -0.32, length: 1.32, width: 0.38, delay: 0,   dmgMul: 1.0, speedMul: 1.15, spread: 0.04, flame: true, reloadMul: 0.5 },
+          { angle: 0, offset:  0.32, length: 1.32, width: 0.38, delay: 0.5, dmgMul: 1.0, speedMul: 1.15, spread: 0.04, flame: true, reloadMul: 0.5 }
+        ]
+      },
+      recursive: {
+        id: 'recursive', name: '🧬 Recursive (Secret)', tier: 4, rarity: 'SECRET', rearArmor: true,
+        barrels: [
+          { angle: 0,     offset: 0, length: 1.56, width: 0.72, delay: 0,    dmgMul: 1.75, speedMul: 0.92, spread: 0.02, reloadMul: 1.35, bulletSizeMul: 1.55, cluster: 2 },
+          { angle: -0.34, offset: 0, length: 1.32, width: 0.44, delay: 0.25, dmgMul: 1.05, speedMul: 0.98, spread: 0.03, reloadMul: 1.35, bulletSizeMul: 1.2,  cluster: 1 },
+          { angle:  0.34, offset: 0, length: 1.32, width: 0.44, delay: 0.25, dmgMul: 1.05, speedMul: 0.98, spread: 0.03, reloadMul: 1.35, bulletSizeMul: 1.2,  cluster: 1 }
+        ]
+      },
+      orbitron: {
+        id: 'orbitron', name: '🪐 Orbitron (Secret)', tier: 4, rarity: 'SECRET', orbitDrones: 6, rearArmor: true, speedBonus: 1.15,
+        barrels: [
+          { angle: 0,              offset: 0, length: 1.42, width: 0.42, delay: 0,    dmgMul: 1.15, speedMul: 1.25, spread: 0.02, reloadMul: 0.82, rail: true },
+          { angle: (2*Math.PI)/3,  offset: 0, length: 1.18, width: 0.36, delay: 0.33, dmgMul: 0.75, speedMul: 1.1,  spread: 0.03, reloadMul: 0.9 },
+          { angle: -(2*Math.PI)/3, offset: 0, length: 1.18, width: 0.36, delay: 0.66, dmgMul: 0.75, speedMul: 1.1,  spread: 0.03, reloadMul: 0.9 }
+        ]
+      },
+      supertank: {
+        id: 'supertank', name: '🌟 Super (1/1000 Secret)', tier: 4, rarity: 'SECRET', orbitDrones: 4, spikes: 10, rearArmor: true, speedBonus: 1.18,
+        barrels: [
+          { angle: 0,     offset: 0,     length: 1.72, width: 0.50, delay: 0,    dmgMul: 1.45, speedMul: 1.45, spread: 0.01, reloadMul: 0.75, rail: true, cluster: 1 },
+          { angle: -0.22, offset: -0.22, length: 1.44, width: 0.38, delay: 0.12, dmgMul: 0.95, speedMul: 1.2,  spread: 0.02, reloadMul: 0.75 },
+          { angle:  0.22, offset:  0.22, length: 1.44, width: 0.38, delay: 0.12, dmgMul: 0.95, speedMul: 1.2,  spread: 0.02, reloadMul: 0.75 },
+          { angle: -0.46, offset: 0,     length: 1.28, width: 0.34, delay: 0.24, dmgMul: 0.82, speedMul: 1.12, spread: 0.03, reloadMul: 0.75 },
+          { angle:  0.46, offset: 0,     length: 1.28, width: 0.34, delay: 0.24, dmgMul: 0.82, speedMul: 1.12, spread: 0.03, reloadMul: 0.75 }
+        ]
+      },
+      prime: {
+        id: 'prime', name: '👑 Prime [LVL 99 Secret]', tier: 4, rarity: 'SECRET', rearArmor: true,
+        barrels: [-0.64, -0.48, -0.32, -0.16, 0, 0.16, 0.32, 0.48, 0.64].map((ang, idx) => ({
+          angle: ang, offset: 0, length: 1.48 - Math.abs(ang) * 0.2, width: 0.36,
+          delay: (Math.abs(idx - 4) * 0.06), dmgMul: 0.92, speedMul: 1.22, spread: 0.015, reloadMul: 0.78
+        }))
+      }
+    };
+
+    const EVO_TREE = {
+      1: ['twin', 'sniper', 'flank', 'pounder', 'flame'],
+      2: ['triple', 'railgun', 'quad', 'destroyer', 'spiker'],
+      3: ['penta', 'octo', 'stormblast', 'annihilator'],
+      4: ['spread99']
+    };
+
+    const STAT_SVG = {
+      dmg: '<svg viewBox="0 0 24 24" class="w-4 h-4 sm:w-5 sm:h-5 shrink-0"><path d="M19 4l-7 7-3-3-2 2 3 3-5 5 2 2 5-5 3 3 2-2-3-3 7-7z" fill="#fca5a5" stroke="#0f172a" stroke-width="1.8" stroke-linejoin="round"/></svg>',
+      pen: '<svg viewBox="0 0 24 24" class="w-4 h-4 sm:w-5 sm:h-5 shrink-0"><path d="M4 9h14l2 2-2 2H11l-2 5H6l1.5-5H4z" fill="#fde047" stroke="#0f172a" stroke-width="1.8" stroke-linejoin="round"/></svg>',
+      bspeed: '<svg viewBox="0 0 24 24" class="w-4 h-4 sm:w-5 sm:h-5 shrink-0"><path d="M5 15l7-7c2-2 5-2 7-2 0 2 0 5-2 7l-7 7-5-5z" fill="#fbbf24" stroke="#0f172a" stroke-width="1.8" stroke-linejoin="round"/><path d="M5 15l5 5" stroke="#0f172a" stroke-width="2"/></svg>',
+      reload: '<svg viewBox="0 0 24 24" class="w-4 h-4 sm:w-5 sm:h-5 shrink-0"><path d="M19 10a7 7 0 00-12.5-2M5 14a7 7 0 0012.5 2" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round"/><polygon points="20,6 20.5,11.5 15,10.5" fill="#ffffff"/><polygon points="4,18 3.5,12.5 9,13.5" fill="#ffffff"/></svg>',
+      maxHp: '<svg viewBox="0 0 24 24" class="w-4 h-4 sm:w-5 sm:h-5 shrink-0"><path d="M12 20.5C6.5 16.5 3.5 13 3.5 8.8A4.8 4.8 0 0112 5.8a4.8 4.8 0 018.5 3c0 4.2-3 7.7-8.5 11.7z" fill="#f43f5e" stroke="#0f172a" stroke-width="1.8" stroke-linejoin="round"/></svg>',
+      regen: '<svg viewBox="0 0 24 24" class="w-4 h-4 sm:w-5 sm:h-5 shrink-0"><path d="M12 20.5C6.5 16.5 3.5 13 3.5 8.8A4.8 4.8 0 0112 5.8a4.8 4.8 0 018.5 3c0 4.2-3 7.7-8.5 11.7z" fill="#f472b6" stroke="#0f172a" stroke-width="1.8"/><path d="M12 9v6M9 12h6" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round"/></svg>',
+      moveSpeed: '<svg viewBox="0 0 24 24" class="w-4 h-4 sm:w-5 sm:h-5 shrink-0"><path d="M4 16l4-6 3 2 4-4 5 5v3H4z" fill="#38bdf8" stroke="#0f172a" stroke-width="1.8" stroke-linejoin="round"/><path d="M4 16h16v3H4z" fill="#ffffff" stroke="#0f172a" stroke-width="1.6"/></svg>',
+      bodyDmg: '<svg viewBox="0 0 24 24" class="w-4 h-4 sm:w-5 sm:h-5 shrink-0"><circle cx="12" cy="12" r="5.5" fill="#94a3b8" stroke="#0f172a" stroke-width="1.8"/><path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.6 5.6l2.2 2.2m8.4 8.4l2.2 2.2M18.4 5.6l-2.2 2.2M7.8 16.2l-2.2 2.2" stroke="#0f172a" stroke-width="2.2" stroke-linecap="round"/></svg>'
+    };
+
+    const STAT_DEFS = [
+      { key: 'dmg',       label: '伤害',     color: '#ef4444', bg: '#dc2626' },
+      { key: 'pen',       label: '子弹生命', color: '#f59e0b', bg: '#eab308' },
+      { key: 'bspeed',    label: '子弹速度', color: '#3b82f6', bg: '#2563eb' },
+      { key: 'reload',    label: '射速',     color: '#22c55e', bg: '#16a34a' },
+      { key: 'maxHp',     label: '最大生命', color: '#a855f7', bg: '#9333ea' },
+      { key: 'regen',     label: '生命恢复', color: '#ec4899', bg: '#db2777' },
+      { key: 'moveSpeed', label: '坦克速度', color: '#f97316', bg: '#ea580c' },
+      { key: 'bodyDmg',   label: '身体伤害', color: '#06b6d4', bg: '#0891b2' }
+    ];
+
+    const ACTIVE_CODES = {
+      HUGEREBALANCE: { xp: 500000, gems: 0, desc: '+500,000 XP' },
+      FOODPHYSICS:   { xp: 250000, gems: 0, desc: '+250,000 XP' },
+      VIPREMOVED:    { xp: 150000, gems: 0, desc: '+150,000 XP' },
+      HALLOWEEN:     { xp: 0, gems: 50000,  desc: '+50,000 Gems' },
+      '4TEAMSHYPE':  { xp: 0, gems: 25000,  desc: '+25,000 Gems' },
+      PRONOP2W:      { xp: 50000,  gems: 0, desc: '+50,000 XP' },
+      SANTASGEMS:    { xp: 0, gems: 25000,  desc: '+25,000 Gems' },
+      STAYTUNED:     { xp: 0, gems: 25000,  desc: '+25,000 Gems' },
+      BOSSRAID:      { xp: 0, gems: 60000,  desc: '+60,000 Gems (Boss)' }
+    };
+
+    const TRADE_BOOTHS = [
+      { id: 'snowflake',   seller: 'Booth_WinterIce',  price: 18000,  tag: 'EXOTIC 冰霜6管' },
+      { id: 'suppress',    seller: 'Booth_SniperGod',  price: 24000,  tag: 'EXOTIC 双联电磁' },
+      { id: 'delta',       seller: 'Booth_ApexTrader', price: 55000,  tag: 'SECRET 极速三角' },
+      { id: 'ultraspiker', seller: 'Booth_Spin2Win',   price: 68000,  tag: 'SECRET 烈焰锯齿' },
+      { id: 'recursive',   seller: 'Booth_FractalX',   price: 82000,  tag: 'SECRET 递归分裂弹' },
+      { id: 'orbitron',    seller: 'Booth_DroneLord',  price: 92000,  tag: 'SECRET 6星环绕无人机' },
+      { id: 'prime',       seller: 'Booth_BlueFan99',  price: 110000, tag: 'SECRET 9管终极巨兽' },
+      { id: 'supertank',   seller: 'Booth_1in1000',    price: 145000, tag: 'SECRET 1/1000 至尊神车' }
+    ];
+
+    const BOT_NAMES = [
+      'BlueCannon', 'TankEnjoyer', 'NoobSlayer99', 'PrimeHunter', 'BloxTanker',
+      'RedDomeKing', 'CursedTurret', 'PentagonFarmer', 'HyperSpread', 'Omega_Rbx',
+      'Spiker_Pro', 'VoxelKnight', 'TankMaster_SG', 'NeonBarrel', 'FrostByteX',
+      'KawaiiCannon', 'IronDome_X', 'DeltaForce', 'FoodStealer', 'LobbyBoss'
+    ];
+
+    // =========================================================================
+    // 3. PERSISTENT ACCOUNT STATE & ARENA STATE
+    // =========================================================================
+    const BADGE_SVG = {
+      sq: '<svg viewBox="0 0 24 24" class="w-5 h-5"><rect x="4" y="4" width="16" height="16" rx="3.5" fill="#facc15" stroke="#0f172a" stroke-width="2"/></svg>',
+      tri: '<svg viewBox="0 0 24 24" class="w-5 h-5"><polygon points="12,3 21,19 3,19" fill="#fb7185" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/></svg>',
+      pent: '<svg viewBox="0 0 24 24" class="w-5 h-5"><polygon points="12,2.5 21,9 17.5,20 6.5,20 3,9" fill="#60a5fa" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/></svg>',
+      boss: '<svg viewBox="0 0 24 24" class="w-5 h-5"><path d="M12 3a8 8 0 00-8 8c0 3 1.5 5 3 6v3h10v-3c1.5-1 3-3 3-6a8 8 0 00-8-8z" fill="#c084fc" stroke="#0f172a" stroke-width="2"/><circle cx="9" cy="11" r="1.7" fill="#0f172a"/><circle cx="15" cy="11" r="1.7" fill="#0f172a"/></svg>',
+      kill: '<svg viewBox="0 0 24 24" class="w-5 h-5"><circle cx="12" cy="12" r="8" fill="#ef4444" stroke="#0f172a" stroke-width="2"/><circle cx="12" cy="12" r="3" fill="#ffffff"/></svg>',
+      star: '<svg viewBox="0 0 24 24" class="w-5 h-5"><path d="M12 2l3.1 6.3 7 1-5 4.9 1.2 6.9L12 17.8 5.7 21.1l1.2-6.9-5-4.9 7-1z" fill="#fbbf24" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/></svg>'
+    };
+    const BADGE_DEFS = [
+      { id: 'sq_100',    icon: BADGE_SVG.sq,   title: 'The Fun is Starting!', desc: '摧毁 100 个黄色方块', stat: 'squares', target: 100, reward: 2000 },
+      { id: 'sq_10000',  icon: BADGE_SVG.sq,   title: 'Square Dominator!',    desc: '摧毁 10,000 个黄色方块', stat: 'squares', target: 10000, reward: 25000 },
+      { id: 'tri_100',   icon: BADGE_SVG.tri,  title: 'This is Better..',     desc: '摧毁 100 个红色三角形', stat: 'triangles', target: 100, reward: 3500 },
+      { id: 'tri_10000', icon: BADGE_SVG.tri,  title: 'Trigonometry!',        desc: '摧毁 10,000 个红色三角形', stat: 'triangles', target: 10000, reward: 35000 },
+      { id: 'pent_100',  icon: BADGE_SVG.pent, title: 'Reinforced!',          desc: '摧毁 100 个蓝色五边形', stat: 'pentagons', target: 100, reward: 6000 },
+      { id: 'pent_10000',icon: BADGE_SVG.pent, title: 'Pentagon Official!',   desc: '摧毁 10,000 个蓝色五边形', stat: 'pentagons', target: 10000, reward: 50000 },
+      { id: 'boss_1',    icon: BADGE_SVG.boss, title: 'Boss Hunter',          desc: '参与并成功讨伐 1 只竞技场巨型 Boss', stat: 'bosses', target: 1, reward: 5000 },
+      { id: 'boss_5',    icon: BADGE_SVG.boss, title: 'Titan Executioner',    desc: '累计讨伐 5 只竞技场巨型 Boss', stat: 'bosses', target: 5, reward: 20000 },
+      { id: 'kills_10',  icon: BADGE_SVG.kill, title: 'Arena Menace',         desc: '累计击毁 10 辆敌方坦克', stat: 'kills', target: 10, reward: 4000 },
+      { id: 'lvl_99',    icon: BADGE_SVG.star, title: 'LVL 99 Overlord',      desc: '单局进化达到最高等级 LVL 99', stat: 'maxLevel', target: 99, reward: 15000 }
+    ];
+
+    const SAVE_KEY = 'rbx_7x3_tank_game_v25';
+    const account = {
+      name: 'TankPlayer',
+      color: '#ef4444',
+      gems: 5000,
+      joinedGroup: false,
+      redeemed: [],
+      ownedTanks: ['basic'],
+      discoveredTanks: ['basic'],
+      claimedBadges: [],
+      notifiedBadges: [],
+      lifetimeStats: { squares: 0, triangles: 0, pentagons: 0, bosses: 0, kills: 0, maxLevel: 1 },
+      equippedStartTank: 'basic',
+      mode: 'normal'
+    };
+
+    function loadSave() {
+      try {
+        const raw = localStorage.getItem(SAVE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          Object.assign(account, parsed);
+          if (!Array.isArray(account.ownedTanks) || !account.ownedTanks.includes('basic')) {
+            account.ownedTanks = ['basic'];
+          }
+          if (!Array.isArray(account.discoveredTanks)) account.discoveredTanks = [...account.ownedTanks];
+          if (!Array.isArray(account.claimedBadges)) account.claimedBadges = [];
+          if (!Array.isArray(account.notifiedBadges)) account.notifiedBadges = [];
+          if (!account.lifetimeStats) {
+            account.lifetimeStats = { squares: 0, triangles: 0, pentagons: 0, bosses: 0, kills: 0, maxLevel: 1 };
+          }
+          if (!Array.isArray(account.redeemed)) account.redeemed = [];
+        }
+      } catch (e) {}
+    }
+
+    function markTankDiscovered(classId) {
+      if (!classId || !TANK_CLASSES[classId]) return;
+      if (!account.discoveredTanks.includes(classId)) {
+        account.discoveredTanks.push(classId);
+        saveAccount();
+      }
+    }
+
+    function recordLifetimeStat(statKey, deltaOrVal, isMax = false) {
+      if (isMax) {
+        if (deltaOrVal > (account.lifetimeStats[statKey] || 0)) {
+          account.lifetimeStats[statKey] = deltaOrVal;
+        }
+      } else {
+        account.lifetimeStats[statKey] = (account.lifetimeStats[statKey] || 0) + deltaOrVal;
+      }
+      // Check badge notifications
+      let hasClaimable = false;
+      for (const b of BADGE_DEFS) {
+        const cur = account.lifetimeStats[b.stat] || 0;
+        if (cur >= b.target) {
+          if (!account.claimedBadges.includes(b.id)) hasClaimable = true;
+          if (!account.notifiedBadges.includes(b.id)) {
+            account.notifiedBadges.push(b.id);
+            SFX.play('levelup');
+            showToast(`🏅 解锁 Roblox 徽章: 【${b.title}】！点击徽章按钮领取 ${b.reward.toLocaleString()}💎`);
+          }
+        }
+      }
+      updateBadgeDots(hasClaimable);
+      saveAccount();
+    }
+
+    function updateBadgeDots(forceState = null) {
+      let hasClaimable = forceState;
+      if (hasClaimable === null) {
+        hasClaimable = BADGE_DEFS.some(b =>
+          (account.lifetimeStats[b.stat] || 0) >= b.target && !account.claimedBadges.includes(b.id)
+        );
+      }
+      const hudDot = document.getElementById('hudBadgeDot');
+      const lobbyDot = document.getElementById('lobbyBadgeDot');
+      if (hudDot) hudDot.classList.toggle('hidden', !hasClaimable);
+      if (lobbyDot) lobbyDot.classList.toggle('hidden', !hasClaimable);
+    }
+
+    function saveAccount() {
+      try {
+        localStorage.setItem(SAVE_KEY, JSON.stringify(account));
+      } catch (e) {}
+    }
+
+    loadSave();
+
+    // Arena World Configuration (Spacious 6800x6800 Arena)
+    const WORLD = {
+      width: 6800,
+      height: 6800,
+      gridSize: 70
+    };
+
+    let gameRunning = false;
+    let statsDrawerOpen = false;
+    let hudMenuOpen = false;
+    let lbOpen = true;
+    let lowAngleCam = true;
+    let camYaw = 0;
+    let camTargetYaw = 0;
+    let camPitch = 0.56;       // radians above horizon (0.26 low horizon .. 1.38 top-down)
+    let camTargetPitch = 0.56;
+    let camDistScale = 1.0;
+    let touchOrbitMode = false;
+    let burstHolding = false;
+    let autoFire = true;
+    let screenShakeEnabled = true;
+    let screenShake = { intensity: 0, time: 0 };
+    let muzzleFlashes = [];
+    let killStreak = { count: 0, timer: 0 };
+    let killFeed = [];
+    let lastTime = 0;
+
+    function triggerScreenShake(amount, duration = 0.24) {
+      if (!screenShakeEnabled) return;
+      screenShake.intensity = Math.min(46, Math.max(screenShake.intensity, amount));
+      screenShake.time = Math.max(screenShake.time, duration);
+    }
+
+    function pushKillFeed(killerName, victimName, isPlayerKiller, streakLabel = '') {
+      killFeed.unshift({
+        killer: killerName,
+        victim: victimName,
+        highlight: isPlayerKiller,
+        streakLabel,
+        life: 4.5
+      });
+      if (killFeed.length > 4) killFeed.pop();
+      renderKillFeedUI();
+    }
+
+    function renderKillFeedUI() {
+      const el = document.getElementById('killFeedList');
+      if (!el) return;
+      el.innerHTML = killFeed.map(item => `
+        <div class="bg-slate-900/80 border border-slate-800 rounded-lg px-2.5 py-1 text-[10px] sm:text-[11px] font-extrabold text-white shadow flex items-center gap-1 max-w-full">
+          <span class="${item.highlight ? 'text-amber-300' : 'text-sky-300'} truncate max-w-[75px]">${item.killer}</span>
+          <span class="text-rose-400 font-black">×</span>
+          <span class="text-slate-200 truncate max-w-[75px]">${item.victim}</span>
+          ${item.streakLabel ? `<span class="bg-rose-500 text-white px-1 rounded text-[9px] shrink-0">${item.streakLabel}</span>` : ''}
+        </div>
+      `).join('');
+    }
+
+    const STREAK_TIERS = [
+      { min: 2, title: 'DOUBLE KILL!',  sub: '双杀达成',     color: '#fde047', pill: 'bg-amber-300 text-slate-950', bonusGems: 150, shake: 18 },
+      { min: 3, title: 'TRIPLE KILL!',  sub: '三杀暴走',     color: '#fb923c', pill: 'bg-orange-400 text-slate-950', bonusGems: 300, shake: 22 },
+      { min: 4, title: 'ULTRA KILL!',   sub: '四杀横扫',     color: '#f43f5e', pill: 'bg-rose-500 text-white',      bonusGems: 500, shake: 26 },
+      { min: 5, title: 'RAMPAGE!!',     sub: '五杀狂暴主宰', color: '#e879f9', pill: 'bg-fuchsia-500 text-white',   bonusGems: 850, shake: 34 },
+      { min: 6, title: 'UNSTOPPABLE!',  sub: '无人能挡',     color: '#38bdf8', pill: 'bg-sky-400 text-slate-950',   bonusGems: 1200, shake: 38 },
+      { min: 7, title: 'GODLIKE!!!',    sub: '超神统治战场', color: '#fef08a', pill: 'bg-gradient-to-r from-rose-500 via-amber-400 to-fuchsia-500 text-slate-950', bonusGems: 1800, shake: 44 }
+    ];
+
+    function showStreakBanner(count) {
+      let tier = STREAK_TIERS[0];
+      for (const st of STREAK_TIERS) {
+        if (count >= st.min) tier = st;
+      }
+      account.gems += tier.bonusGems;
+      sessionStats.gemsEarned += tier.bonusGems;
+      saveAccount();
+
+      SFX.play('streak');
+      triggerScreenShake(tier.shake, 0.36);
+
+      const banner = document.getElementById('streakBanner');
+      const pill = document.getElementById('streakBadgePill');
+      const main = document.getElementById('streakMainTitle');
+      const sub = document.getElementById('streakSubText');
+
+      pill.className = `px-3 py-0.5 rounded-full border-2 border-slate-900 text-[10px] sm:text-xs font-black tracking-widest uppercase shadow ${tier.pill}`;
+      pill.textContent = `${count}x KILL STREAK`;
+      main.textContent = tier.title;
+      main.style.color = tier.color;
+      sub.textContent = `${tier.sub} • 额外赏金 +${tier.bonusGems} 宝石`;
+
+      banner.classList.remove('hidden', 'streak-anim');
+      void banner.offsetWidth; // Force reflow to restart CSS keyframe animation
+      banner.classList.add('streak-anim');
+      return tier.title.replace(/!+/g, '');
+    }
+
+    const input = {
+      keys: {},
+      mouseX: window.innerWidth / 2,
+      mouseY: window.innerHeight / 2,
+      mouseDown: false,
+      moveStick: { active: false, id: null, startX: 0, startY: 0, dx: 0, dy: 0 },
+      aimStick:  { active: false, id: null, startX: 0, startY: 0, dx: 0, dy: 0 },
+      camDrag:   { active: false, id: null, lastX: 0, lastY: 0, isMouse: false }
+    };
+
+    let player = null;
+    let entities = []; // Bots
+    let foods = [];
+    let bullets = [];
+    let particles = [];
+    let floatTexts = [];
+    let drones = [];
+    let arenaBoss = null;
+    let bossSpawnTimer = 30;
+    let bossCycleIndex = 0;
+    let rvbScores = { red: 0, blue: 0 };
+    let sessionStats = { maxLvl: 1, kills: 0, gemsEarned: 0 };
+
+    // =========================================================================
+    // 4. ENTITY FACTORIES & PROGRESSION MATH
+    // =========================================================================
+    function xpForLevel(lvl) {
+      return Math.floor(85 * Math.pow(lvl, 1.42));
+    }
+
+    function createTank({ isPlayer = false, name = 'Tank', x = 2100, y = 2100, color = '#ef4444', team = 'ffa', classId = 'basic', startLevel = 1 }) {
+      const t = {
+        id: Math.random().toString(36).slice(2),
+        isPlayer,
+        name,
+        x, y,
+        vx: 0, vy: 0,
+        angle: 0,
+        color,
+        team,
+        classId,
+        level: 1,
+        xp: 0,
+        nextXp: xpForLevel(1),
+        statPoints: 0,
+        unlockedEvoTier: 0,
+        stats: { dmg: 0, pen: 0, bspeed: 0, reload: 0, maxHp: 0, regen: 0, moveSpeed: 0, bodyDmg: 0 },
+        hp: 120,
+        maxHp: 120,
+        radius: 26,
+        barrelTimers: new Array(12).fill(0),
+        barrelRecoil: new Array(12).fill(0),
+        burnTimer: 0,
+        burnDps: 0,
+        slowTimer: 0,
+        spawnShield: 3.0,
+        spikeRot: 0,
+        score: 0,
+        aiTimer: 0,
+        aiTarget: null,
+        aiWanderAngle: Math.random() * Math.PI * 2
+      };
+      recalcTankStats(t, true);
+      if (startLevel > 1) {
+        for (let l = 1; l < startLevel; l++) {
+          grantRawLevel(t);
+        }
+      }
+      return t;
+    }
+
+    function recalcTankStats(t, healFull = false) {
+      const cls = TANK_CLASSES[t.classId] || TANK_CLASSES.basic;
+      const lvlScale = 1 + (t.level - 1) * 0.024;
+      t.radius = Math.min(54, 25 + (t.level - 1) * 0.24);
+      const prevMax = t.maxHp || 120;
+      t.maxHp = Math.round((120 * lvlScale) + t.stats.maxHp * 42);
+      if (healFull) {
+        t.hp = t.maxHp;
+      } else {
+        const ratio = prevMax > 0 ? t.hp / prevMax : 1;
+        t.hp = Math.min(t.maxHp, Math.max(1, t.hp + (t.maxHp - prevMax) * ratio));
+      }
+      t.computed = {
+        bulletDmg: (16 + t.stats.dmg * 5.2) * (1 + (t.level - 1) * 0.012),
+        bulletHp:  1 + t.stats.pen * 0.65,
+        bulletSpd: 520 + t.stats.bspeed * 42,
+        reloadSec: Math.max(0.11, 0.56 * Math.pow(0.915, t.stats.reload)),
+        regenPerSec: (1.8 + t.stats.regen * 2.8) + t.maxHp * 0.008,
+        moveAccel: (1150 + t.stats.moveSpeed * 95) * (cls.speedBonus || 1) * Math.max(0.76, 1 - (t.level - 1) * 0.002),
+        bodyDmg: (22 + t.stats.bodyDmg * 9.5) * (cls.bodyDmgBonus || 1)
+      };
+    }
+
+    function grantRawLevel(t) {
+      if (t.level >= 99) return;
+      t.level++;
+      t.nextXp = xpForLevel(t.level);
+      if (t.level <= 45 || t.level % 2 === 1) {
+        t.statPoints++;
+      }
+      recalcTankStats(t, false);
+    }
+
+    function addXp(t, amount) {
+      if (!t || t.hp <= 0) return;
+      const mul = account.mode === 'mega' ? 3.0 : 1.0;
+      t.xp += amount * mul;
+      t.score += Math.round(amount * mul);
+      let leveled = false;
+      while (t.level < 99 && t.xp >= t.nextXp) {
+        t.xp -= t.nextXp;
+        grantRawLevel(t);
+        leveled = true;
+      }
+      if (t.level >= 99) {
+        t.xp = t.nextXp;
+      }
+      if (leveled) {
+        if (t.isPlayer) {
+          sessionStats.maxLvl = Math.max(sessionStats.maxLvl, t.level);
+          recordLifetimeStat('maxLevel', t.level, true);
+          SFX.play('levelup');
+          spawnFloatText(t.x, t.y - t.radius - 14, `LEVEL ${t.level}!`, '#fbbf24', 18);
+          checkPlayerEvoPrompt();
+          updateHudUI();
+        } else {
+          autoUpgradeBot(t);
+        }
+      }
+    }
+
+    function autoUpgradeBot(bot) {
+      const keys = STAT_DEFS.map(s => s.key);
+      while (bot.statPoints > 0) {
+        const k = keys[Math.floor(Math.random() * keys.length)];
+        if (bot.stats[k] < 12) {
+          bot.stats[k]++;
+          bot.statPoints--;
+        } else break;
+      }
+      recalcTankStats(bot, false);
+      // Evolve bot according to level
+      const cls = TANK_CLASSES[bot.classId];
+      if (!cls || cls.rarity) return;
+      if (bot.level >= 75 && cls.tier < 4) bot.classId = 'spread99';
+      else if (bot.level >= 45 && cls.tier < 3) {
+        const pool = EVO_TREE[3];
+        bot.classId = pool[Math.floor(Math.random() * pool.length)];
+      } else if (bot.level >= 25 && cls.tier < 2) {
+        const pool = EVO_TREE[2];
+        bot.classId = pool[Math.floor(Math.random() * pool.length)];
+      } else if (bot.level >= 10 && cls.tier < 1) {
+        const pool = ['twin', 'sniper', 'flank', 'pounder', 'flame'];
+        bot.classId = pool[Math.floor(Math.random() * pool.length)];
+      }
+    }
+
+    // =========================================================================
+    // 5. FOOD GEOMETRY SPAWNER (Squares, Triangles, Pentagons, Alpha Pentagon)
+    // =========================================================================
+    const FOOD_TYPES = {
+      square:   { sides: 4, radius: 16, hp: 22,   xp: 32,   color: '#facc15', border: '#a16207', bodyDmg: 6 },
+      triangle: { sides: 3, radius: 20, hp: 58,   xp: 95,   color: '#fb7185', border: '#be123c', bodyDmg: 11 },
+      pentagon: { sides: 5, radius: 29, hp: 210,  xp: 380,  color: '#60a5fa', border: '#1d4ed8', bodyDmg: 18 },
+      alpha:    { sides: 5, radius: 64, hp: 2400, xp: 4800, color: '#818cf8', border: '#312e81', bodyDmg: 36, isBoss: true }
+    };
+
+    function spawnFoodItem(forceCenter = false) {
+      const r = Math.random();
+      let kind = 'square';
+      let x = 140 + Math.random() * (WORLD.width - 280);
+      let y = 140 + Math.random() * (WORLD.height - 280);
+
+      // Center Pentagon Nest (1600..2600)
+      const inCenter = forceCenter || Math.random() < 0.22;
+      if (inCenter) {
+        x = WORLD.width / 2 + (Math.random() - 0.5) * 1100;
+        y = WORLD.height / 2 + (Math.random() - 0.5) * 1100;
+        const cr = Math.random();
+        const alphaCount = foods.filter(f => f.kind === 'alpha').length;
+        if (cr < 0.05 && alphaCount < 3) kind = 'alpha';
+        else if (cr < 0.68) kind = 'pentagon';
+        else kind = 'triangle';
+      } else {
+        if (r < 0.58) kind = 'square';
+        else if (r < 0.88) kind = 'triangle';
+        else kind = 'pentagon';
+      }
+
+      const spec = FOOD_TYPES[kind];
+      foods.push({
+        kind,
+        sides: spec.sides,
+        x, y,
+        vx: (Math.random() - 0.5) * 18,
+        vy: (Math.random() - 0.5) * 18,
+        rot: Math.random() * Math.PI * 2,
+        rotSpd: (Math.random() - 0.5) * (spec.isBoss ? 0.35 : 1.1),
+        radius: spec.radius,
+        hp: spec.hp,
+        maxHp: spec.hp,
+        xp: spec.xp,
+        color: spec.color,
+        border: spec.border,
+        bodyDmg: spec.bodyDmg,
+        isBoss: !!spec.isBoss,
+        hitBounce: 0,
+        hitFlash: 0,
+        idlePhase: Math.random() * Math.PI * 2
+      });
+    }
+
+    // =========================================================================
+    // 6. START ARENA, BOTS & SAFE ZONES
+    // =========================================================================
+    function getSafeSpawnPos(team, avoidPlayer = false) {
+      for (let attempt = 0; attempt < 18; attempt++) {
+        let px, py;
+        if (account.mode === 'rvb') {
+          if (team === 'red') {
+            px = 240 + Math.random() * 380;
+            py = 320 + Math.random() * (WORLD.height - 640);
+          } else {
+            px = WORLD.width - 620 + Math.random() * 380;
+            py = 320 + Math.random() * (WORLD.height - 640);
+          }
+        } else {
+          px = 380 + Math.random() * (WORLD.width - 760);
+          py = 380 + Math.random() * (WORLD.height - 760);
+        }
+
+        // Keep new spawns well away from the player and spread out from other tanks
+        if (avoidPlayer && player && player.hp > 0) {
+          if (Math.hypot(px - player.x, py - player.y) < 1150) continue;
+        }
+        let crowded = false;
+        for (const other of entities) {
+          if (other.hp > 0 && Math.hypot(px - other.x, py - other.y) < 520) {
+            crowded = true;
+            break;
+          }
+        }
+        if (!crowded) return { x: px, y: py };
+      }
+      return {
+        x: 400 + Math.random() * (WORLD.width - 800),
+        y: 400 + Math.random() * (WORLD.height - 800)
+      };
+    }
+
+    function startArena(keepHalfLevel = false) {
+      SFX.init();
+      const prevLvl = 1;
+
+      bullets = [];
+      muzzleFlashes = [];
+      screenShake = { intensity: 0, time: 0 };
+      killStreak = { count: 0, timer: 0 };
+      killFeed = [];
+      renderKillFeedUI();
+      document.getElementById('streakBanner').classList.add('hidden');
+      drones = [];
+      arenaBoss = null;
+      bossSpawnTimer = 25;
+      particles = [];
+      floatTexts = [];
+      foods = [];
+      entities = [];
+      rvbScores = { red: 0, blue: 0 };
+
+      if (!keepHalfLevel) {
+        sessionStats = { maxLvl: 1, kills: 0, gemsEarned: 0 };
+      }
+
+      const startClass = (account.mode === 'pro') ? 'basic' : (account.equippedStartTank || 'basic');
+      const playerTeam = (account.mode === 'rvb') ? 'red' : 'ffa';
+      const playerColor = (account.mode === 'rvb') ? '#ef4444' : account.color;
+      const pos = getSafeSpawnPos(playerTeam);
+
+      player = createTank({
+        isPlayer: true,
+        name: account.name || 'TankPlayer',
+        x: pos.x,
+        y: pos.y,
+        color: playerColor,
+        team: playerTeam,
+        classId: startClass,
+        startLevel: prevLvl
+      });
+
+      // Spawn Food comfortably across the 6800x6800 map
+      const foodTarget = account.mode === 'mega' ? 260 : 195;
+      for (let i = 0; i < foodTarget; i++) {
+        spawnFoodItem(i < 24);
+      }
+
+      // Spawn Bots (Reduced density so players have plenty of room to farm & duel!)
+      const botCount = account.mode === 'mega' ? 18 : 9;
+      for (let i = 0; i < botCount; i++) {
+        spawnBot();
+      }
+
+      // UI Transitions
+      document.getElementById('lobbyModal').classList.add('hidden');
+      document.getElementById('deathModal').classList.add('hidden');
+      document.getElementById('hudLayer').classList.remove('hidden');
+
+      const modeNames = {
+        normal: '⚔️ NORMAL ARENA',
+        mega:   '🔥 MEGA 50-BOT (3x XP)',
+        rvb:    '🚩 RED VS BLUE',
+        pro:    '🏆 PRO NO-P2W ARENA'
+      };
+      document.getElementById('modeBadge').textContent = modeNames[account.mode] || 'NORMAL ARENA';
+      document.getElementById('rvbScoreBar').classList.toggle('hidden', account.mode !== 'rvb');
+      document.getElementById('serverCountText').textContent = account.mode === 'mega' ? '19/20' : '10/20';
+
+      gameRunning = true;
+      checkPlayerEvoPrompt();
+      updateHudUI();
+    }
+
+    function spawnBot() {
+      const botTeam = account.mode === 'rvb'
+        ? (entities.filter(e => e.team === 'blue').length <= entities.filter(e => e.team === 'red').length ? 'blue' : 'red')
+        : 'ffa';
+      const palette = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
+      const botColor = account.mode === 'rvb'
+        ? (botTeam === 'red' ? '#ef4444' : '#3b82f6')
+        : palette[Math.floor(Math.random() * palette.length)];
+      const pos = getSafeSpawnPos(botTeam, true);
+      const lvlRoll = Math.random();
+      let startLvl = 1 + Math.floor(Math.random() * 14);
+      if (lvlRoll > 0.85) startLvl = 35 + Math.floor(Math.random() * 45);
+      else if (lvlRoll > 0.55) startLvl = 15 + Math.floor(Math.random() * 22);
+
+      let clsId = 'basic';
+      if (account.mode !== 'pro' && Math.random() < 0.11) {
+        const rares = ['snowflake', 'suppress', 'delta', 'recursive', 'orbitron', 'prime', 'supertank'];
+        clsId = rares[Math.floor(Math.random() * rares.length)];
+      }
+      const b = createTank({
+        isPlayer: false,
+        name: BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)],
+        x: pos.x,
+        y: pos.y,
+        color: botColor,
+        team: botTeam,
+        classId: clsId,
+        startLevel: startLvl
+      });
+      autoUpgradeBot(b);
+      entities.push(b);
+    }
+
+    // =========================================================================
+    // 7. SHOOTING, PHYSICS, AI & COLLISION LOOP
+    // =========================================================================
+    function fireTankWeapon(t, dt) {
+      const cls = TANK_CLASSES[t.classId] || TANK_CLASSES.basic;
+      const barrels = cls.barrels;
+      for (let i = 0; i < barrels.length; i++) {
+        const b = barrels[i];
+        const interval = t.computed.reloadSec * (b.reloadMul || 1);
+        t.barrelTimers[i] -= dt;
+        if (t.barrelTimers[i] <= 0) {
+          t.barrelTimers[i] = interval;
+          t.barrelRecoil[i] = 1.0;
+
+          const dirAngle = t.angle + b.angle + (Math.random() - 0.5) * (b.spread || 0);
+          const perpAngle = t.angle + b.angle + Math.PI / 2;
+          const muzzleDist = t.radius * b.length;
+          const latDist = t.radius * (b.offset || 0);
+
+          const bx = t.x + Math.cos(t.angle + b.angle) * muzzleDist + Math.cos(perpAngle) * latDist;
+          const by = t.y + Math.sin(t.angle + b.angle) * muzzleDist + Math.sin(perpAngle) * latDist;
+          const spd = t.computed.bulletSpd * (b.speedMul || 1);
+          const bRadius = Math.max(6, t.radius * (b.width || 0.4) * 0.52 * (b.bulletSizeMul || 1));
+
+          bullets.push({
+            ownerId: t.id,
+            ownerRef: t,
+            team: t.team,
+            x: bx,
+            y: by,
+            vx: Math.cos(dirAngle) * spd + t.vx * 0.15,
+            vy: Math.sin(dirAngle) * spd + t.vy * 0.15,
+            radius: bRadius,
+            dmg: t.computed.bulletDmg * (b.dmgMul || 1),
+            hp: t.computed.bulletHp * (b.rail ? 2.2 : 1),
+            life: b.flame ? 0.65 : (b.rail ? 1.9 : 1.55),
+            maxLife: b.flame ? 0.65 : 1.55,
+            color: b.flame ? '#fb923c' : (b.freeze ? '#38bdf8' : (b.rail ? '#fde047' : (b.cluster ? '#e879f9' : t.color))),
+            flame: !!b.flame,
+            freeze: !!b.freeze,
+            rail: !!b.rail,
+            cluster: b.cluster || 0
+          });
+
+          // Spawn 3D Muzzle Flash at barrel tip (if near camera)
+          if (!player || Math.hypot(bx - player.x, by - player.y) < 1150) {
+            muzzleFlashes.push({
+              x: bx,
+              y: by,
+              angle: dirAngle,
+              size: Math.max(10, bRadius * 1.95),
+              color: b.flame ? '#fb923c' : (b.rail ? '#fef08a' : (b.freeze ? '#bae6fd' : '#fde047')),
+              life: 0.095,
+              maxLife: 0.095
+            });
+          }
+
+          // Recoil impulse
+          const recoilForce = (b.dmgMul || 1) * 24;
+          t.vx -= Math.cos(dirAngle) * recoilForce;
+          t.vy -= Math.sin(dirAngle) * recoilForce;
+
+          if (t.isPlayer && i === 0) {
+            SFX.play('shoot');
+            if ((b.dmgMul || 1) >= 1.6) triggerScreenShake(4.5, 0.09);
+          }
+        }
+      }
+    }
+
+    function isFriendly(a, b) {
+      if (a.id === b.id) return true;
+      if (account.mode === 'rvb' && a.team === b.team) return true;
+      return false;
+    }
+
+    function inEnemySafeZone(entityX, team) {
+      if (account.mode !== 'rvb') return false;
+      if (team === 'red' && entityX > WORLD.width - 520) return true;
+      if (team === 'blue' && entityX < 520) return true;
+      return false;
+    }
+
+    function inOwnSafeZone(entityX, team) {
+      if (account.mode !== 'rvb') return false;
+      if (team === 'red' && entityX < 520) return true;
+      if (team === 'blue' && entityX > WORLD.width - 520) return true;
+      return false;
+    }
+
+    function spawnParticles(x, y, color, count = 8, speed = 160) {
+      for (let i = 0; i < count; i++) {
+        const a = Math.random() * Math.PI * 2;
+        const s = (0.3 + Math.random() * 0.7) * speed;
+        particles.push({
+          x, y,
+          vx: Math.cos(a) * s,
+          vy: Math.sin(a) * s,
+          size: 4 + Math.random() * 6,
+          color,
+          life: 0.35 + Math.random() * 0.25,
+          maxLife: 0.6
+        });
+      }
+    }
+
+    function spawnFloatText(x, y, text, color = '#ffffff', size = 14) {
+      floatTexts.push({ x, y, text, color, size, life: 0.95, maxLife: 0.95 });
+    }
+
+    // Recursive Secret Tank: Split bullet into recursive sub-munitions on impact or expiry
+    function triggerClusterSplit(b) {
+      if (!b.cluster || b.cluster <= 0) return;
+      const subCount = b.cluster === 2 ? 5 : 4;
+      const baseAngle = Math.atan2(b.vy, b.vx);
+      const spd = Math.max(380, Math.hypot(b.vx, b.vy) * 0.9);
+      for (let k = 0; k < subCount; k++) {
+        const spreadAng = baseAngle + ((k - (subCount - 1) / 2) * 0.42) + (Math.random() - 0.5) * 0.1;
+        bullets.push({
+          ownerId: b.ownerId,
+          ownerRef: b.ownerRef,
+          team: b.team,
+          x: b.x + Math.cos(spreadAng) * 8,
+          y: b.y + Math.sin(spreadAng) * 8,
+          vx: Math.cos(spreadAng) * spd,
+          vy: Math.sin(spreadAng) * spd,
+          radius: Math.max(5.5, b.radius * 0.66),
+          dmg: b.dmg * 0.52,
+          hp: 1.2,
+          life: 0.72,
+          maxLife: 0.72,
+          color: b.cluster === 2 ? '#c084fc' : '#f472b6',
+          flame: false,
+          freeze: false,
+          rail: false,
+          cluster: b.cluster - 1,
+          isBossBullet: !!b.isBossBullet
+        });
+      }
+      spawnParticles(b.x, b.y, '#e879f9', 6, 130);
+    }
+
+    // Orbitron / Super Secret Tank: Autonomous Orbiting Drones
+    function syncAndUpdateDrones(dt, allTanks) {
+      // Remove drones whose owner died or changed class
+      for (let i = drones.length - 1; i >= 0; i--) {
+        const d = drones[i];
+        const owner = d.ownerRef;
+        const cls = owner ? TANK_CLASSES[owner.classId] : null;
+        if (!owner || owner.hp <= 0 || !cls || !cls.orbitDrones) {
+          drones.splice(i, 1);
+        }
+      }
+
+      // Spawn missing drones up to class cap
+      for (const t of allTanks) {
+        if (t.hp <= 0) continue;
+        const cls = TANK_CLASSES[t.classId];
+        if (!cls || !cls.orbitDrones) continue;
+        const myDrones = drones.filter(d => d.ownerId === t.id);
+        t.droneSpawnCd = (t.droneSpawnCd || 0) - dt;
+        if (myDrones.length < cls.orbitDrones && t.droneSpawnCd <= 0) {
+          t.droneSpawnCd = 0.65;
+          const slot = myDrones.length;
+          drones.push({
+            ownerId: t.id,
+            ownerRef: t,
+            team: t.team,
+            x: t.x,
+            y: t.y,
+            vx: 0,
+            vy: 0,
+            orbitAngle: (slot * Math.PI * 2) / cls.orbitDrones,
+            radius: 13,
+            hp: 45 + t.stats.pen * 18,
+            dmg: t.computed.bulletDmg * 0.95,
+            color: t.isPlayer ? '#38bdf8' : t.color
+          });
+        }
+      }
+
+      // Update drone movement & attacks
+      for (let i = drones.length - 1; i >= 0; i--) {
+        const d = drones[i];
+        const owner = d.ownerRef;
+        d.orbitAngle += dt * 2.6;
+
+        // Acquire nearest hostile target within leash radius around owner
+        let targetX = owner.x + Math.cos(d.orbitAngle) * (owner.radius + 64);
+        let targetY = owner.y + Math.sin(d.orbitAngle) * (owner.radius + 64);
+        let bestDist = 340;
+
+        if (arenaBoss && arenaBoss.hp > 0) {
+          const bd = Math.hypot(arenaBoss.x - owner.x, arenaBoss.y - owner.y);
+          if (bd < 460) {
+            bestDist = bd;
+            targetX = arenaBoss.x;
+            targetY = arenaBoss.y;
+          }
+        }
+        for (const other of allTanks) {
+          if (other.hp <= 0 || isFriendly(owner, other) || other.spawnShield > 0 || inOwnSafeZone(other.x, other.team)) continue;
+          const dist = Math.hypot(other.x - owner.x, other.y - owner.y);
+          if (dist < bestDist) {
+            bestDist = dist;
+            targetX = other.x;
+            targetY = other.y;
+          }
+        }
+        if (bestDist === 340) {
+          for (const f of foods) {
+            const dist = Math.hypot(f.x - owner.x, f.y - owner.y);
+            if (dist < 220 && dist < bestDist) {
+              bestDist = dist;
+              targetX = f.x;
+              targetY = f.y;
+            }
+          }
+        }
+
+        const dx = targetX - d.x;
+        const dy = targetY - d.y;
+        const len = Math.hypot(dx, dy) || 1;
+        const chaseSpd = 540 + owner.stats.bspeed * 28;
+        d.vx += (dx / len) * chaseSpd * dt * 4.5;
+        d.vy += (dy / len) * chaseSpd * dt * 4.5;
+        d.vx *= Math.pow(0.08, dt);
+        d.vy *= Math.pow(0.08, dt);
+        d.x += d.vx * dt;
+        d.y += d.vy * dt;
+
+        // Collide with Arena Boss
+        if (arenaBoss && arenaBoss.hp > 0) {
+          if (Math.hypot(arenaBoss.x - d.x, arenaBoss.y - d.y) < arenaBoss.radius + d.radius) {
+            damageArenaBoss(arenaBoss, d.dmg * 0.9, owner);
+            spawnParticles(d.x, d.y, '#38bdf8', 5, 130);
+            drones.splice(i, 1);
+            continue;
+          }
+        }
+
+        // Collide with enemy tanks
+        let consumed = false;
+        for (const other of allTanks) {
+          if (other.hp <= 0 || isFriendly(owner, other) || other.spawnShield > 0 || inOwnSafeZone(other.x, other.team)) continue;
+          if (Math.hypot(other.x - d.x, other.y - d.y) < other.radius + d.radius) {
+            other.hp -= d.dmg;
+            spawnParticles(d.x, d.y, d.color, 5, 130);
+            if (other.hp <= 0) {
+              spawnParticles(other.x, other.y, other.color, 20, 260);
+              handleKillCredit(owner, other);
+            }
+            drones.splice(i, 1);
+            consumed = true;
+            break;
+          }
+        }
+        if (consumed) continue;
+
+        // Collide with food
+        for (let j = foods.length - 1; j >= 0; j--) {
+          const f = foods[j];
+          if (Math.hypot(f.x - d.x, f.y - d.y) < f.radius + d.radius) {
+            f.hp -= d.dmg;
+            f.hitBounce = 1.0;
+            f.hitFlash = 0.11;
+            d.hp -= 18;
+            if (f.hp <= 0) {
+              spawnParticles(f.x, f.y, f.color, f.isBoss ? 22 : 8, 170);
+              addXp(owner, f.xp);
+              foods.splice(j, 1);
+              spawnFoodItem();
+            }
+            if (d.hp <= 0) {
+              drones.splice(i, 1);
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    // =========================================================================
+    // ARENA GIANT BOSS SYSTEM (Timed Spawn every 45s at Center Pentagon Nest)
+    // =========================================================================
+    const BOSS_ARCHETYPES = [
+      {
+        kind: 'guardian',
+        name: '👾 OMEGA PENTAGON KING',
+        sides: 5,
+        radius: 92,
+        maxHp: 14000,
+        color: '#9333ea',
+        accent: '#f0abfc',
+        barrels: 5,
+        xpReward: 38000,
+        gemReward: 6500
+      },
+      {
+        kind: 'colossus',
+        name: '🔥 CRIMSON OVERLORD MK-99',
+        sides: 8,
+        radius: 98,
+        maxHp: 18500,
+        color: '#e11d48',
+        accent: '#fda4af',
+        barrels: 8,
+        xpReward: 52000,
+        gemReward: 9000
+      },
+      {
+        kind: 'recursive_core',
+        name: '🌌 FRACTAL RECURSIVE TITAN',
+        sides: 6,
+        radius: 95,
+        maxHp: 16500,
+        color: '#0284c7',
+        accent: '#7dd3fc',
+        barrels: 6,
+        clusterBoss: true,
+        xpReward: 46000,
+        gemReward: 8000
+      }
+    ];
+
+    function spawnArenaBoss() {
+      const spec = BOSS_ARCHETYPES[bossCycleIndex % BOSS_ARCHETYPES.length];
+      bossCycleIndex++;
+      arenaBoss = {
+        id: 'arena_boss_' + Date.now(),
+        name: spec.name,
+        sides: spec.sides,
+        x: WORLD.width / 2,
+        y: WORLD.height / 2,
+        vx: 0,
+        vy: 0,
+        rot: 0,
+        radius: spec.radius,
+        hp: spec.maxHp,
+        maxHp: spec.maxHp,
+        color: spec.color,
+        accent: spec.accent,
+        barrels: spec.barrels,
+        clusterBoss: !!spec.clusterBoss,
+        xpReward: spec.xpReward,
+        gemReward: spec.gemReward,
+        fireCd: 1.0,
+        phaseTimer: 0,
+        playerDamaged: false
+      };
+      SFX.play('boss');
+      showToast(`⚠️ 竞技场中央刷新了巨型 Boss: ${spec.name}！参与讨伐赢海量宝石与 Secret 掉落！`);
+      spawnParticles(arenaBoss.x, arenaBoss.y, spec.accent, 36, 360);
+    }
+
+    function damageArenaBoss(boss, dmg, attacker) {
+      if (!boss || boss.hp <= 0) return;
+      boss.hp -= dmg;
+      if (attacker && attacker.isPlayer) {
+        boss.playerDamaged = true;
+      }
+      if (boss.hp <= 0) {
+        boss.hp = 0;
+        spawnParticles(boss.x, boss.y, boss.accent, 50, 420);
+        spawnParticles(boss.x, boss.y, '#fde047', 35, 320);
+        triggerScreenShake(42, 0.55);
+        SFX.play('kill');
+
+        // Reward killer + reward player if player participated or dealt final blow
+        if (attacker && !attacker.isPlayer) {
+          addXp(attacker, boss.xpReward * 0.5);
+        }
+        if (player && player.hp > 0 && (boss.playerDamaged || (attacker && attacker.isPlayer))) {
+          const fullShare = (attacker && attacker.isPlayer) ? 1.0 : 0.7;
+          const xpGain = Math.round(boss.xpReward * fullShare);
+          const gemGain = Math.round(boss.gemReward * fullShare);
+          addXp(player, xpGain);
+          account.gems += gemGain;
+          sessionStats.gemsEarned += gemGain;
+
+          // 35% chance to drop an unowned Secret Tank directly!
+          const secretPool = ['recursive', 'orbitron', 'delta', 'ultraspiker', 'prime', 'supertank'];
+          recordLifetimeStat('bosses', 1);
+          const missing = secretPool.filter(s => !account.ownedTanks.includes(s));
+          let dropMsg = '';
+          if (missing.length > 0 && Math.random() < 0.45) {
+            const dropped = missing[Math.floor(Math.random() * missing.length)];
+            account.ownedTanks.push(dropped);
+            markTankDiscovered(dropped);
+            dropMsg = ` & 掉落 【${TANK_CLASSES[dropped].name}】!`;
+            refreshLobbyInventoryUI();
+          }
+          saveAccount();
+          spawnFloatText(boss.x, boss.y - 30, `🏆 BOSS 讨伐成功! +${gemGain}💎${dropMsg}`, '#fde047', 20);
+          showToast(`🏆 成功击败 ${boss.name}！获得 +${xpGain.toLocaleString()} XP 与 +${gemGain.toLocaleString()} 💎${dropMsg}`);
+          updateHudUI();
+        } else {
+          showToast(`💥 ${boss.name} 已被竞技场玩家击败！45秒后刷新下一只 Boss`);
+        }
+
+        arenaBoss = null;
+        bossSpawnTimer = 45;
+      }
+    }
+
+    function updateArenaBoss(dt, allTanks) {
+      if (!arenaBoss) {
+        bossSpawnTimer -= dt;
+        if (bossSpawnTimer <= 0) {
+          spawnArenaBoss();
+        }
+        return;
+      }
+
+      const b = arenaBoss;
+      b.rot += dt * 0.58;
+      b.phaseTimer += dt;
+
+      // Slowly patrol near center & chase closest nearby tank within 950px
+      let nearest = null;
+      let nearestDist = 950;
+      for (const t of allTanks) {
+        if (t.hp <= 0 || inOwnSafeZone(t.x, t.team)) continue;
+        const d = Math.hypot(t.x - b.x, t.y - b.y);
+        if (d < nearestDist) {
+          nearestDist = d;
+          nearest = t;
+        }
+      }
+
+      if (nearest) {
+        const dx = nearest.x - b.x;
+        const dy = nearest.y - b.y;
+        const len = Math.hypot(dx, dy) || 1;
+        b.vx += (dx / len) * 210 * dt;
+        b.vy += (dy / len) * 210 * dt;
+      } else {
+        const cx = WORLD.width / 2 - b.x;
+        const cy = WORLD.height / 2 - b.y;
+        b.vx += cx * 0.4 * dt;
+        b.vy += cy * 0.4 * dt;
+      }
+      b.vx *= Math.pow(0.12, dt);
+      b.vy *= Math.pow(0.12, dt);
+      b.x = Math.max(650, Math.min(WORLD.width - 650, b.x + b.vx * dt));
+      b.y = Math.max(400, Math.min(WORLD.height - 400, b.y + b.vy * dt));
+
+      // Boss radial cannon volley & periodic spiral burst
+      b.fireCd -= dt;
+      if (b.fireCd <= 0) {
+        const enraged = b.hp < b.maxHp * 0.45;
+        b.fireCd = enraged ? 0.58 : 0.88;
+        for (let i = 0; i < b.barrels; i++) {
+          const ang = b.rot + (i * Math.PI * 2) / b.barrels;
+          const mx = b.x + Math.cos(ang) * (b.radius * 1.15);
+          const my = b.y + Math.sin(ang) * (b.radius * 1.15);
+          const spd = enraged ? 470 : 390;
+          bullets.push({
+            ownerId: b.id,
+            ownerRef: null,
+            team: 'boss',
+            isBossBullet: true,
+            x: mx,
+            y: my,
+            vx: Math.cos(ang) * spd,
+            vy: Math.sin(ang) * spd,
+            radius: 14,
+            dmg: enraged ? 42 : 32,
+            hp: 2.5,
+            life: 2.4,
+            maxLife: 2.4,
+            color: b.accent,
+            flame: false,
+            freeze: false,
+            rail: false,
+            cluster: b.clusterBoss ? 1 : 0
+          });
+        }
+      }
+
+      // Tank vs Boss body collision
+      for (const t of allTanks) {
+        if (t.hp <= 0) continue;
+        const dx = t.x - b.x;
+        const dy = t.y - b.y;
+        const dist = Math.hypot(dx, dy) || 0.01;
+        if (dist < t.radius + b.radius) {
+          const nx = dx / dist;
+          const ny = dy / dist;
+          t.x = b.x + nx * (t.radius + b.radius + 2);
+          t.y = b.y + ny * (t.radius + b.radius + 2);
+          t.vx += nx * 320;
+          t.vy += ny * 320;
+          if (t.spawnShield <= 0) {
+            t.hp -= 68 * dt * 4;
+            damageArenaBoss(b, t.computed.bodyDmg * dt * 4, t);
+            if (t.hp <= 0) {
+              spawnParticles(t.x, t.y, t.color, 22, 280);
+            }
+          }
+        }
+      }
+    }
+
+    function updateBotAI(bot, dt, allTanks) {
+      bot.aiTimer -= dt;
+      if (bot.aiTimer <= 0) {
+        bot.aiTimer = 0.25 + Math.random() * 0.25;
+        // Look for nearby target tank or food
+        let bestEnemy = null;
+        let bestEnemyDist = 520;
+        for (const other of allTanks) {
+          if (other.hp <= 0 || isFriendly(bot, other) || inOwnSafeZone(other.x, other.team)) continue;
+          const d = Math.hypot(other.x - bot.x, other.y - bot.y);
+          if (d < bestEnemyDist) {
+            bestEnemyDist = d;
+            bestEnemy = other;
+          }
+        }
+        bot.aiTarget = bestEnemy;
+
+        if (!bestEnemy) {
+          let bestFood = null;
+          let bestFoodDist = 620;
+          for (const f of foods) {
+            if (f.isBoss && bot.level < 25) continue;
+            const d = Math.hypot(f.x - bot.x, f.y - bot.y);
+            if (d < bestFoodDist) {
+              bestFoodDist = d;
+              bestFood = f;
+            }
+          }
+          bot.aiFood = bestFood;
+        }
+      }
+
+      let moveX = 0, moveY = 0;
+      let wantShoot = false;
+
+      if (bot.aiTarget && bot.aiTarget.hp > 0) {
+        const tx = bot.aiTarget.x;
+        const ty = bot.aiTarget.y;
+        const dx = tx - bot.x;
+        const dy = ty - bot.y;
+        const dist = Math.hypot(dx, dy) || 1;
+        bot.angle = Math.atan2(dy, dx);
+        wantShoot = true;
+
+        const lowHp = bot.hp < bot.maxHp * 0.32;
+        const isRammer = bot.classId === 'spiker' || bot.classId === 'ultraspiker';
+        if (lowHp) {
+          moveX = -dx / dist;
+          moveY = -dy / dist;
+        } else if (isRammer || dist > 300) {
+          moveX = dx / dist;
+          moveY = dy / dist;
+        } else if (dist < 190) {
+          moveX = -dx / dist;
+          moveY = -dy / dist;
+        } else {
+          // Strafe
+          moveX = -dy / dist;
+          moveY = dx / dist;
+        }
+      } else if (bot.aiFood && bot.aiFood.hp > 0) {
+        const dx = bot.aiFood.x - bot.x;
+        const dy = bot.aiFood.y - bot.y;
+        const dist = Math.hypot(dx, dy) || 1;
+        bot.angle = Math.atan2(dy, dx);
+        wantShoot = dist < 480;
+        if (dist > 130) {
+          moveX = dx / dist;
+          moveY = dy / dist;
+        }
+      } else {
+        bot.aiWanderAngle += (Math.random() - 0.5) * 1.5 * dt;
+        // Only turn inward when approaching outer arena border (prevents center herding!)
+        const cx = WORLD.width / 2 - bot.x;
+        const cy = WORLD.height / 2 - bot.y;
+        if (Math.hypot(cx, cy) > 2900) {
+          bot.aiWanderAngle = Math.atan2(cy, cx) + (Math.random() - 0.5) * 0.6;
+        }
+        moveX = Math.cos(bot.aiWanderAngle) * 0.7;
+        moveY = Math.sin(bot.aiWanderAngle) * 0.7;
+        bot.angle = bot.aiWanderAngle;
+      }
+
+      // Avoid enemy safe zone in RvB
+      if (account.mode === 'rvb') {
+        if (bot.team === 'red' && bot.x > WORLD.width - 700) moveX = -1;
+        if (bot.team === 'blue' && bot.x < 700) moveX = 1;
+      }
+
+      const slowMul = bot.slowTimer > 0 ? 0.55 : 1;
+      bot.vx += moveX * bot.computed.moveAccel * slowMul * dt;
+      bot.vy += moveY * bot.computed.moveAccel * slowMul * dt;
+
+      if (wantShoot) {
+        fireTankWeapon(bot, dt);
+      }
+    }
+
+    function handleKillCredit(attacker, victimTank) {
+      if (!attacker || attacker.hp <= 0) return;
+      const bonusXp = 220 + victimTank.level * 95;
+      addXp(attacker, bonusXp);
+
+      if (account.mode === 'rvb') {
+        if (attacker.team === 'red') rvbScores.red++;
+        if (attacker.team === 'blue') rvbScores.blue++;
+      }
+
+      if (attacker.isPlayer) {
+        const gemGain = 150 + victimTank.level * 35;
+        account.gems += gemGain;
+        sessionStats.kills++;
+        sessionStats.gemsEarned += gemGain;
+        recordLifetimeStat('kills', 1);
+
+        // Update player Kill Streak (10s combo window)
+        if (killStreak.timer > 0) {
+          killStreak.count++;
+        } else {
+          killStreak.count = 1;
+        }
+        killStreak.timer = 10.0;
+
+        let streakTag = '';
+        if (killStreak.count >= 2) {
+          streakTag = showStreakBanner(killStreak.count);
+        } else {
+          triggerScreenShake(14, 0.24);
+          SFX.play('kill');
+        }
+
+        pushKillFeed(attacker.name, victimTank.name, true, streakTag);
+        saveAccount();
+        spawnFloatText(victimTank.x, victimTank.y - 18, `💥 击毁 ${victimTank.name} +${gemGain}💎`, '#34d399', 16);
+        updateHudUI();
+      } else if (victimTank.isPlayer || (player && Math.hypot(victimTank.x - player.x, victimTank.y - player.y) < 1200)) {
+        if (victimTank.isPlayer) triggerScreenShake(28, 0.42);
+        pushKillFeed(attacker.name, victimTank.name, false, '');
+      }
+    }
+
+    function updateSimulation(dt) {
+      if (!gameRunning || !player) return;
+
+      const allTanks = [player, ...entities];
+
+      // 1. Player Input & Movement
+      if (player.hp > 0) {
+        let mx = 0, my = 0;
+        if (input.keys['KeyW'] || input.keys['ArrowUp'])    my -= 1;
+        if (input.keys['KeyS'] || input.keys['ArrowDown'])  my += 1;
+        if (input.keys['KeyA'] || input.keys['ArrowLeft'])  mx -= 1;
+        if (input.keys['KeyD'] || input.keys['ArrowRight']) mx += 1;
+
+        if (input.moveStick.active) {
+          mx = input.moveStick.dx;
+          my = input.moveStick.dy;
+        }
+        const mLen = Math.hypot(mx, my);
+        if (mLen > 1) { mx /= mLen; my /= mLen; }
+
+        // Keyboard smooth camera rotation (Q / R)
+        if (input.keys['KeyQ']) camTargetYaw += 2.2 * dt;
+        if (input.keys['KeyR']) camTargetYaw -= 2.2 * dt;
+
+        // Convert screen-space WASD / left joystick input into Camera-Relative world movement!
+        const cosY = Math.cos(camYaw);
+        const sinY = Math.sin(camYaw);
+        const worldMoveX = mx * cosY + my * sinY;
+        const worldMoveZ = -mx * sinY + my * cosY;
+
+        const slowMul = player.slowTimer > 0 ? 0.55 : 1;
+        player.vx += worldMoveX * player.computed.moveAccel * slowMul * dt;
+        player.vy += worldMoveZ * player.computed.moveAccel * slowMul * dt;
+
+        // Aiming: on touch-orbit mode aim along camera's forward look vector; on desktop raycast mouse to floor
+        if (touchOrbitMode) {
+          player.angle = Math.atan2(-Math.cos(camYaw), -Math.sin(camYaw));
+        } else if (!input.camDrag.active) {
+          const aimPt = getMouseWorldPoint3D(input.mouseX, input.mouseY);
+          if (aimPt) {
+            player.angle = Math.atan2(aimPt.z - player.y, aimPt.x - player.x);
+          } else {
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            player.angle = Math.atan2(input.mouseY - cy, input.mouseX - cx);
+          }
+        }
+
+        const wantShoot = autoFire || burstHolding || input.mouseDown || input.keys['Space'] || input.aimStick.active;
+        if (wantShoot) {
+          if (mx !== 0 || my !== 0 || input.mouseDown) player.spawnShield = Math.min(player.spawnShield, 0.5);
+          fireTankWeapon(player, dt);
+        }
+      }
+
+      // 2. Bots AI, Orbitron Drones & Arena Giant Boss
+      for (const bot of entities) {
+        if (bot.hp > 0) updateBotAI(bot, dt, allTanks);
+      }
+      syncAndUpdateDrones(dt, allTanks);
+      updateArenaBoss(dt, allTanks);
+
+      // 3. Integrate Tanks, Regen, Burn & Safe Zones
+      for (const t of allTanks) {
+        if (t.hp <= 0) continue;
+
+        t.spawnShield = Math.max(0, t.spawnShield - dt);
+        t.slowTimer = Math.max(0, t.slowTimer - dt);
+        t.spikeRot += dt * 2.4;
+
+        // Decay barrel recoil animation
+        for (let i = 0; i < t.barrelRecoil.length; i++) {
+          t.barrelRecoil[i] = Math.max(0, t.barrelRecoil[i] - dt * 5.5);
+        }
+
+        // Burn DOT (Flame tank perk)
+        if (t.burnTimer > 0) {
+          t.burnTimer -= dt;
+          t.hp -= t.burnDps * dt;
+          if (Math.random() < 0.3) spawnParticles(t.x, t.y, '#fb923c', 1, 55);
+          if (t.hp <= 0) {
+            spawnParticles(t.x, t.y, t.color, 18, 260);
+            handleKillCredit(t.burnAttacker, t);
+            continue;
+          }
+        } else {
+          // Passive regeneration (faster inside own RvB base)
+          const baseBoost = inOwnSafeZone(t.x, t.team) ? 4.5 : 1;
+          t.hp = Math.min(t.maxHp, t.hp + t.computed.regenPerSec * baseBoost * dt);
+        }
+
+        // Friction
+        const damping = Math.pow(0.018, dt);
+        t.vx *= damping;
+        t.vy *= damping;
+
+        t.x += t.vx * dt;
+        t.y += t.vy * dt;
+
+        // World Bounds & RvB Enemy Base Repulsion
+        t.x = Math.max(t.radius, Math.min(WORLD.width - t.radius, t.x));
+        t.y = Math.max(t.radius, Math.min(WORLD.height - t.radius, t.y));
+
+        if (inEnemySafeZone(t.x, t.team)) {
+          if (t.team === 'red') { t.x = WORLD.width - 522; t.vx = -350; }
+          if (t.team === 'blue') { t.x = 522; t.vx = 350; }
+        }
+      }
+
+      // 4. Tank vs Tank Body Collisions
+      for (let i = 0; i < allTanks.length; i++) {
+        const a = allTanks[i];
+        if (a.hp <= 0) continue;
+        for (let j = i + 1; j < allTanks.length; j++) {
+          const b = allTanks[j];
+          if (b.hp <= 0) continue;
+          const dx = b.x - a.x;
+          const dy = b.y - a.y;
+          const dist = Math.hypot(dx, dy) || 0.01;
+          const minDist = a.radius + b.radius;
+          if (dist < minDist) {
+            const nx = dx / dist;
+            const ny = dy / dist;
+            const overlap = (minDist - dist) * 0.5;
+            a.x -= nx * overlap;
+            a.y -= ny * overlap;
+            b.x += nx * overlap;
+            b.y += ny * overlap;
+
+            if (!isFriendly(a, b) && a.spawnShield <= 0 && b.spawnShield <= 0 &&
+                !inOwnSafeZone(a.x, a.team) && !inOwnSafeZone(b.x, b.team)) {
+              a.hp -= b.computed.bodyDmg * dt * 5.5;
+              b.hp -= a.computed.bodyDmg * dt * 5.5;
+              a.vx -= nx * 160; a.vy -= ny * 160;
+              b.vx += nx * 160; b.vy += ny * 160;
+              spawnParticles((a.x + b.x) / 2, (a.y + b.y) / 2, '#ffffff', 2, 110);
+
+              if (a.hp <= 0) {
+                spawnParticles(a.x, a.y, a.color, 20, 260);
+                handleKillCredit(b, a);
+              }
+              if (b.hp <= 0) {
+                spawnParticles(b.x, b.y, b.color, 20, 260);
+                handleKillCredit(a, b);
+              }
+            }
+          }
+        }
+      }
+
+      // 5. Food Physics & Tank-Food Collisions
+      for (let i = foods.length - 1; i >= 0; i--) {
+        const f = foods[i];
+        f.rot += f.rotSpd * dt;
+        f.idlePhase += dt * 2.2;
+        if (f.hitBounce > 0) f.hitBounce = Math.max(0, f.hitBounce - dt * 3.1);
+        if (f.hitFlash > 0) f.hitFlash = Math.max(0, f.hitFlash - dt);
+        f.x += f.vx * dt;
+        f.y += f.vy * dt;
+        f.vx *= Math.pow(0.15, dt);
+        f.vy *= Math.pow(0.15, dt);
+        f.x = Math.max(f.radius + 20, Math.min(WORLD.width - f.radius - 20, f.x));
+        f.y = Math.max(f.radius + 20, Math.min(WORLD.height - f.radius - 20, f.y));
+
+        for (const t of allTanks) {
+          if (t.hp <= 0) continue;
+          const dx = f.x - t.x;
+          const dy = f.y - t.y;
+          const dist = Math.hypot(dx, dy) || 0.01;
+          if (dist < t.radius + f.radius) {
+            const nx = dx / dist;
+            const ny = dy / dist;
+            f.vx += nx * 190;
+            f.vy += ny * 190;
+            t.vx -= nx * 75;
+            t.vy -= ny * 75;
+            f.hp -= t.computed.bodyDmg * dt * 6;
+            if (f.hitBounce < 0.45) f.hitBounce = 0.72;
+            f.hitFlash = 0.08;
+            if (t.spawnShield <= 0 && !inOwnSafeZone(t.x, t.team)) {
+              t.hp -= f.bodyDmg * dt * 4;
+            }
+            if (f.hp <= 0) {
+              spawnParticles(f.x, f.y, f.color, f.isBoss ? 24 : 8, 180);
+              addXp(t, f.xp);
+              if (t.isPlayer) {
+                if (f.kind === 'square') recordLifetimeStat('squares', 1);
+                else if (f.kind === 'triangle') recordLifetimeStat('triangles', 1);
+                else if (f.kind === 'pentagon' || f.kind === 'alpha') recordLifetimeStat('pentagons', 1);
+                SFX.play('pop');
+                if (f.isBoss) {
+                  account.gems += 800;
+                  sessionStats.gemsEarned += 800;
+                  saveAccount();
+                  spawnFloatText(f.x, f.y, `+${f.xp} XP & +800💎!`, '#a78bfa', 18);
+                }
+              }
+              foods.splice(i, 1);
+              spawnFoodItem();
+              break;
+            }
+          }
+        }
+      }
+
+      // 6. Bullets Update & Collisions
+      for (let i = bullets.length - 1; i >= 0; i--) {
+        const b = bullets[i];
+        b.life -= dt;
+        if (b.life <= 0 || b.hp <= 0) {
+          if (b.life <= 0 && b.cluster > 0) triggerClusterSplit(b);
+          bullets.splice(i, 1);
+          continue;
+        }
+        if (b.flame) {
+          b.radius += dt * 26;
+          b.vx *= Math.pow(0.35, dt);
+          b.vy *= Math.pow(0.35, dt);
+        }
+        b.x += b.vx * dt;
+        b.y += b.vy * dt;
+
+        if (b.x < 0 || b.x > WORLD.width || b.y < 0 || b.y > WORLD.height || inEnemySafeZone(b.x, b.team)) {
+          bullets.splice(i, 1);
+          continue;
+        }
+
+        // Player/Bot Bullet vs Giant Arena Boss
+        if (!b.isBossBullet && arenaBoss && arenaBoss.hp > 0) {
+          const bdx = arenaBoss.x - b.x;
+          const bdy = arenaBoss.y - b.y;
+          if (bdx * bdx + bdy * bdy < (arenaBoss.radius + b.radius) * (arenaBoss.radius + b.radius)) {
+            damageArenaBoss(arenaBoss, b.dmg, b.ownerRef);
+            spawnParticles(b.x, b.y, arenaBoss.accent, 3, 110);
+            if (b.ownerRef && b.ownerRef.isPlayer) SFX.play('hit');
+            if (b.cluster > 0) triggerClusterSplit(b);
+            bullets.splice(i, 1);
+            continue;
+          }
+        }
+
+        // Bullet vs Food
+        let removed = false;
+        if (b.isBossBullet) {
+          // Boss bullets ignore small food so volleys stay threatening
+        } else
+        for (let j = foods.length - 1; j >= 0; j--) {
+          const f = foods[j];
+          const dx = f.x - b.x;
+          const dy = f.y - b.y;
+          if (dx * dx + dy * dy < (f.radius + b.radius) * (f.radius + b.radius)) {
+            f.hp -= b.dmg;
+            f.hitBounce = 1.0;
+            f.hitFlash = 0.12;
+            f.vx += b.vx * 0.14;
+            f.vy += b.vy * 0.14;
+            b.hp -= 1;
+            spawnParticles(b.x, b.y, f.color, 3, 90);
+
+            if (f.hp <= 0) {
+              spawnParticles(f.x, f.y, f.color, f.isBoss ? 24 : 9, 190);
+              addXp(b.ownerRef, f.xp);
+              if (b.ownerRef && b.ownerRef.isPlayer) {
+                if (f.kind === 'square') recordLifetimeStat('squares', 1);
+                else if (f.kind === 'triangle') recordLifetimeStat('triangles', 1);
+                else if (f.kind === 'pentagon' || f.kind === 'alpha') recordLifetimeStat('pentagons', 1);
+                SFX.play('pop');
+                if (f.isBoss) {
+                  account.gems += 800;
+                  sessionStats.gemsEarned += 800;
+                  saveAccount();
+                  spawnFloatText(f.x, f.y, `BOSS PENTAGON +800💎!`, '#c084fc', 18);
+                } else {
+                  spawnFloatText(f.x, f.y, `+${Math.round(f.xp * (account.mode === 'mega' ? 3 : 1))} XP`, '#fde047', 12);
+                }
+              }
+              foods.splice(j, 1);
+              spawnFoodItem();
+            }
+            if (b.hp <= 0) {
+              if (b.cluster > 0) triggerClusterSplit(b);
+              bullets.splice(i, 1);
+              removed = true;
+              break;
+            }
+          }
+        }
+        if (removed) continue;
+
+        // Bullet vs Tanks
+        for (const t of allTanks) {
+          if (t.hp <= 0 || t.id === b.ownerId || isFriendly( { id: b.ownerId, team: b.team }, t )) continue;
+          if (t.spawnShield > 0 || inOwnSafeZone(t.x, t.team)) continue;
+
+          const dx = t.x - b.x;
+          const dy = t.y - b.y;
+          if (dx * dx + dy * dy < (t.radius + b.radius) * (t.radius + b.radius)) {
+            t.hp -= b.dmg;
+            t.vx += b.vx * 0.08;
+            t.vy += b.vy * 0.08;
+            if (b.flame) {
+              t.burnTimer = 2.6;
+              t.burnDps = b.dmg * 0.85;
+              t.burnAttacker = b.ownerRef;
+            }
+            if (b.freeze) {
+              t.slowTimer = 2.2;
+            }
+            b.hp -= 1.2;
+            spawnParticles(b.x, b.y, b.color, 4, 120);
+            if (b.ownerRef && b.ownerRef.isPlayer) SFX.play('hit');
+
+            if (t.hp <= 0) {
+              spawnParticles(t.x, t.y, t.color, 22, 280);
+              handleKillCredit(b.ownerRef, t);
+            }
+            if (b.hp <= 0) {
+              if (b.cluster > 0) triggerClusterSplit(b);
+              bullets.splice(i, 1);
+              break;
+            }
+          }
+        }
+      }
+
+      // 7. Respawn Dead Bots & Check Player Death
+      for (let i = entities.length - 1; i >= 0; i--) {
+        if (entities[i].hp <= 0) {
+          entities.splice(i, 1);
+          spawnBot();
+        }
+      }
+
+      if (player.hp <= 0) {
+        gameRunning = false;
+        showDeathModal();
+      }
+
+      // 8. Muzzle Flashes, Screen Shake, Kill Streak & Kill Feed Timers, Particles & Float Texts
+      for (let i = muzzleFlashes.length - 1; i >= 0; i--) {
+        muzzleFlashes[i].life -= dt;
+        if (muzzleFlashes[i].life <= 0) muzzleFlashes.splice(i, 1);
+      }
+      if (screenShake.time > 0) {
+        screenShake.time = Math.max(0, screenShake.time - dt);
+        screenShake.intensity *= Math.pow(0.03, dt);
+        if (screenShake.time <= 0) screenShake.intensity = 0;
+      }
+      if (killStreak.timer > 0) {
+        killStreak.timer = Math.max(0, killStreak.timer - dt);
+        if (killStreak.timer <= 0) killStreak.count = 0;
+      }
+      if (killFeed.length > 0) {
+        let changed = false;
+        for (let i = killFeed.length - 1; i >= 0; i--) {
+          killFeed[i].life -= dt;
+          if (killFeed[i].life <= 0) {
+            killFeed.splice(i, 1);
+            changed = true;
+          }
+        }
+        if (changed) renderKillFeedUI();
+      }
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.life -= dt;
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.vx *= 0.92;
+        p.vy *= 0.92;
+        if (p.life <= 0) particles.splice(i, 1);
+      }
+      for (let i = floatTexts.length - 1; i >= 0; i--) {
+        const ft = floatTexts[i];
+        ft.life -= dt;
+        ft.y -= 32 * dt;
+        if (ft.life <= 0) floatTexts.splice(i, 1);
+      }
+    }
+
+    // =========================================================================
+    // 8. 3D-SHADED ROBLOX DOME TANK & ARENA RENDERER
+    // =========================================================================
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // =========================================================================
+    // 8A. THREE.JS 3D CARTOON / CEL-SHADED ENGINE (Roblox 7x3 Aesthetic)
+    // =========================================================================
+    const TOON_GRADIENT = (() => {
+      if (typeof THREE === 'undefined') return null;
+      const c = document.createElement('canvas');
+      c.width = 4; c.height = 1;
+      const g = c.getContext('2d');
+      g.fillStyle = '#808080'; g.fillRect(0, 0, 1, 1);
+      g.fillStyle = '#c8c8c8'; g.fillRect(1, 0, 1, 1);
+      g.fillStyle = '#f2f2f2'; g.fillRect(2, 0, 1, 1);
+      g.fillStyle = '#ffffff'; g.fillRect(3, 0, 1, 1);
+      const tex = new THREE.CanvasTexture(c);
+      tex.minFilter = THREE.NearestFilter;
+      tex.magFilter = THREE.NearestFilter;
+      return tex;
+    })();
+
+    const THREE_STATE = {
+      ready: false,
+      scene: null,
+      camera: null,
+      renderer: null,
+      raycaster: null,
+      groundPlane: null,
+      ndc: null,
+      tankMeshes: new Map(),
+      foodMeshes: new Map(),
+      bulletMeshes: new Map(),
+      droneMeshes: new Map(),
+      particleMeshes: new Map(),
+      flashMeshes: new Map(),
+      camSmoothX: WORLD.width / 2,
+      camSmoothY: 700,
+      camSmoothZ: WORLD.height / 2 + 450,
+      bossMesh: null,
+      bossMeshId: null,
+      rvbRedMesh: null,
+      rvbBlueMesh: null,
+      matCache: new Map(),
+      outlineMat: null,
+      boreMat: null,
+      sharedGeo: {}
+    };
+
+    function getToonMat(hexColor) {
+      const key = String(hexColor);
+      if (THREE_STATE.matCache.has(key)) return THREE_STATE.matCache.get(key);
+      const mat = new THREE.MeshToonMaterial({
+        color: new THREE.Color(hexColor),
+        gradientMap: TOON_GRADIENT
+      });
+      THREE_STATE.matCache.set(key, mat);
+      return mat;
+    }
+
+    function addToonOutline(parent, geo, thickness = 1.09) {
+      const out = new THREE.Mesh(geo, THREE_STATE.outlineMat);
+      out.scale.setScalar(thickness);
+      parent.add(out);
+      return out;
+    }
+
+    function initThreeEngine() {
+      if (typeof THREE === 'undefined') return;
+      const container = document.getElementById('glContainer');
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color('#bfe3ff');
+      scene.fog = new THREE.Fog('#d8eeff', 950, 2650);
+
+      const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 10, 4500);
+      camera.position.set(WORLD.width / 2, 760, WORLD.height / 2 + 540);
+      camera.lookAt(WORLD.width / 2, 0, WORLD.height / 2);
+
+      const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      container.innerHTML = '';
+      container.appendChild(renderer.domElement);
+
+      // Bright Daylight Cartoon Lighting
+      const hemi = new THREE.HemisphereLight('#ffffff', '#cbd5e1', 0.92);
+      scene.add(hemi);
+
+      const dirLight = new THREE.DirectionalLight('#fffbeb', 0.85);
+      dirLight.position.set(1600, 2400, 1400);
+      scene.add(dirLight);
+
+      const rimLight = new THREE.DirectionalLight('#bae6fd', 0.35);
+      rimLight.position.set(-1200, 900, -1400);
+      scene.add(rimLight);
+
+      THREE_STATE.outlineMat = new THREE.MeshBasicMaterial({ color: '#0f172a', side: THREE.BackSide });
+      THREE_STATE.boreMat = new THREE.MeshBasicMaterial({ color: '#0f172a' });
+
+      THREE_STATE.sharedGeo = {
+        dome: new THREE.SphereGeometry(1, 24, 16, 0, Math.PI * 2, 0, Math.PI * 0.54),
+        barrel: new THREE.CylinderGeometry(0.5, 0.5, 1, 16),
+        bore: new THREE.CircleGeometry(0.36, 14),
+        shadow: new THREE.CircleGeometry(1.16, 20),
+        bullet: new THREE.SphereGeometry(1, 12, 10),
+        particle: new THREE.BoxGeometry(1, 1, 1),
+        drone: new THREE.ConeGeometry(0.9, 2.2, 4),
+        foodSq: (() => {
+          const s = new THREE.Shape();
+          const r = 0.62, c = 0.24;
+          s.moveTo(-r + c, -r);
+          s.lineTo(r - c, -r); s.quadraticCurveTo(r, -r, r, -r + c);
+          s.lineTo(r, r - c);  s.quadraticCurveTo(r, r, r - c, r);
+          s.lineTo(-r + c, r); s.quadraticCurveTo(-r, r, -r, r - c);
+          s.lineTo(-r, -r + c); s.quadraticCurveTo(-r, -r, -r + c, -r);
+          const g = new THREE.ExtrudeGeometry(s, { depth: 0.78, bevelEnabled: true, bevelThickness: 0.24, bevelSize: 0.22, bevelSegments: 4 });
+          g.rotateX(-Math.PI / 2);
+          g.center();
+          return g;
+        })(),
+        foodTri: (() => {
+          const pts = [];
+          for (let i = 0; i < 3; i++) {
+            const a = (i * Math.PI * 2) / 3 - Math.PI / 2;
+            pts.push(new THREE.Vector2(Math.cos(a) * 0.92, Math.sin(a) * 0.92));
+          }
+          const s = new THREE.Shape();
+          for (let i = 0; i < 3; i++) {
+            const p0 = pts[(i + 2) % 3], p1 = pts[i], p2 = pts[(i + 1) % 3];
+            const a1 = p1.clone().lerp(p0, 0.24);
+            const a2 = p1.clone().lerp(p2, 0.24);
+            if (i === 0) s.moveTo(a1.x, a1.y);
+            else s.lineTo(a1.x, a1.y);
+            s.quadraticCurveTo(p1.x, p1.y, a2.x, a2.y);
+          }
+          s.closePath();
+          const g = new THREE.ExtrudeGeometry(s, { depth: 0.72, bevelEnabled: true, bevelThickness: 0.22, bevelSize: 0.20, bevelSegments: 4 });
+          g.rotateX(-Math.PI / 2);
+          g.center();
+          return g;
+        })(),
+        foodPent: (() => {
+          const pts = [];
+          for (let i = 0; i < 5; i++) {
+            const a = (i * Math.PI * 2) / 5 - Math.PI / 2;
+            pts.push(new THREE.Vector2(Math.cos(a) * 0.88, Math.sin(a) * 0.88));
+          }
+          const s = new THREE.Shape();
+          for (let i = 0; i < 5; i++) {
+            const p0 = pts[(i + 4) % 5], p1 = pts[i], p2 = pts[(i + 1) % 5];
+            const a1 = p1.clone().lerp(p0, 0.24);
+            const a2 = p1.clone().lerp(p2, 0.24);
+            if (i === 0) s.moveTo(a1.x, a1.y);
+            else s.lineTo(a1.x, a1.y);
+            s.quadraticCurveTo(p1.x, p1.y, a2.x, a2.y);
+          }
+          s.closePath();
+          const g = new THREE.ExtrudeGeometry(s, { depth: 0.82, bevelEnabled: true, bevelThickness: 0.24, bevelSize: 0.20, bevelSegments: 4 });
+          g.rotateX(-Math.PI / 2);
+          g.center();
+          return g;
+        })(),
+        spike: new THREE.ConeGeometry(0.28, 0.72, 4),
+        flashCone: new THREE.ConeGeometry(0.62, 1.85, 7),
+        flashCore: new THREE.SphereGeometry(0.68, 10, 8)
+      };
+
+      // Procedural Roblox White/Gray Checkerboard Baseplate Texture
+      const tileC = document.createElement('canvas');
+      tileC.width = 256; tileC.height = 256;
+      const tg = tileC.getContext('2d');
+      tg.fillStyle = '#f8fafc';
+      tg.fillRect(0, 0, 256, 256);
+      tg.fillStyle = '#dce6f5';
+      tg.fillRect(0, 0, 128, 128);
+      tg.fillRect(128, 128, 128, 128);
+      tg.fillStyle = 'rgba(148, 163, 184, 0.16)';
+      for (const sx of [32, 96, 160, 224]) {
+        for (const sy of [32, 96, 160, 224]) {
+          tg.beginPath();
+          tg.arc(sx, sy, 9, 0, Math.PI * 2);
+          tg.fill();
+        }
+      }
+      const floorTex = new THREE.CanvasTexture(tileC);
+      floorTex.wrapS = THREE.RepeatWrapping;
+      floorTex.wrapT = THREE.RepeatWrapping;
+      floorTex.repeat.set(WORLD.width / 140, WORLD.height / 140);
+
+      const floorMesh = new THREE.Mesh(
+        new THREE.PlaneGeometry(WORLD.width, WORLD.height),
+        new THREE.MeshLambertMaterial({ map: floorTex })
+      );
+      floorMesh.rotation.x = -Math.PI / 2;
+      floorMesh.position.set(WORLD.width / 2, 0, WORLD.height / 2);
+      scene.add(floorMesh);
+
+      // Center Pentagon Nest Glowing Ring
+      const nestRing = new THREE.Mesh(
+        new THREE.RingGeometry(605, 625, 48),
+        new THREE.MeshBasicMaterial({ color: '#818cf8', transparent: true, opacity: 0.38, side: THREE.DoubleSide })
+      );
+      nestRing.rotation.x = -Math.PI / 2;
+      nestRing.position.set(WORLD.width / 2, 1.5, WORLD.height / 2);
+      scene.add(nestRing);
+
+      // Arena 3D Border Walls
+      const wallMat = new THREE.MeshToonMaterial({ color: '#334155', gradientMap: TOON_GRADIENT });
+      const wallH = 44;
+      const wallThick = 34;
+      const walls = [
+        [WORLD.width / 2, wallH / 2, -wallThick / 2, WORLD.width + wallThick * 2, wallH, wallThick],
+        [WORLD.width / 2, wallH / 2, WORLD.height + wallThick / 2, WORLD.width + wallThick * 2, wallH, wallThick],
+        [-wallThick / 2, wallH / 2, WORLD.height / 2, wallThick, wallH, WORLD.height],
+        [WORLD.width + wallThick / 2, wallH / 2, WORLD.height / 2, wallThick, wallH, WORLD.height]
+      ];
+      walls.forEach(([wx, wy, wz, ww, wh, wd]) => {
+        const wm = new THREE.Mesh(new THREE.BoxGeometry(ww, wh, wd), wallMat);
+        wm.position.set(wx, wy, wz);
+        scene.add(wm);
+      });
+
+      // RvB Safe Zone Floor Overlays
+      const redZone = new THREE.Mesh(
+        new THREE.PlaneGeometry(520, WORLD.height),
+        new THREE.MeshBasicMaterial({ color: '#ef4444', transparent: true, opacity: 0.16, side: THREE.DoubleSide })
+      );
+      redZone.rotation.x = -Math.PI / 2;
+      redZone.position.set(260, 1.2, WORLD.height / 2);
+      redZone.visible = false;
+      scene.add(redZone);
+
+      const blueZone = new THREE.Mesh(
+        new THREE.PlaneGeometry(520, WORLD.height),
+        new THREE.MeshBasicMaterial({ color: '#3b82f6', transparent: true, opacity: 0.16, side: THREE.DoubleSide })
+      );
+      blueZone.rotation.x = -Math.PI / 2;
+      blueZone.position.set(WORLD.width - 260, 1.2, WORLD.height / 2);
+      blueZone.visible = false;
+      scene.add(blueZone);
+
+      THREE_STATE.scene = scene;
+      THREE_STATE.camera = camera;
+      THREE_STATE.renderer = renderer;
+      THREE_STATE.raycaster = new THREE.Raycaster();
+      THREE_STATE.groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+      THREE_STATE.ndc = new THREE.Vector2();
+      THREE_STATE.rvbRedMesh = redZone;
+      THREE_STATE.rvbBlueMesh = blueZone;
+      THREE_STATE.ready = true;
+    }
+
+    function getMouseWorldPoint3D(clientX, clientY) {
+      if (!THREE_STATE.ready) return null;
+      THREE_STATE.ndc.x = (clientX / window.innerWidth) * 2 - 1;
+      THREE_STATE.ndc.y = -(clientY / window.innerHeight) * 2 + 1;
+      THREE_STATE.raycaster.setFromCamera(THREE_STATE.ndc, THREE_STATE.camera);
+      const hit = new THREE.Vector3();
+      const ok = THREE_STATE.raycaster.ray.intersectPlane(THREE_STATE.groundPlane, hit);
+      return ok ? hit : null;
+    }
+
+    function projectToScreen3D(wx, wy, wz) {
+      if (!THREE_STATE.ready) return { x: -999, y: -999, visible: false };
+      const v = new THREE.Vector3(wx, wy, wz);
+      v.project(THREE_STATE.camera);
+      return {
+        x: (v.x * 0.5 + 0.5) * canvas.width,
+        y: (-v.y * 0.5 + 0.5) * canvas.height,
+        visible: v.z < 1
+      };
+    }
+
+    // Build 3D Cel-Shaded Cartoon Tank matching the Reference Image
+    function buildTankMesh3D(t) {
+      const cls = TANK_CLASSES[t.classId] || TANK_CLASSES.basic;
+      const root = new THREE.Group();
+      root.userData = { classId: t.classId, color: t.color, barrelPivots: [], spikeGroup: null, shieldMesh: null };
+
+      // Soft Floor Contact Shadow (flush on y=0 ground plane)
+      const shMat = new THREE.MeshBasicMaterial({ color: '#0f172a', transparent: true, opacity: 0.22, depthWrite: false });
+      const sh = new THREE.Mesh(THREE_STATE.sharedGeo.shadow, shMat);
+      sh.rotation.x = -Math.PI / 2;
+      sh.position.y = 0.015;
+      root.add(sh);
+
+      // 3D Glossy Cartoon Hemisphere Dome Body + Thick Black Ink Outline
+      const domeGroup = new THREE.Group();
+      domeGroup.position.y = 0.08;
+      const dome = new THREE.Mesh(THREE_STATE.sharedGeo.dome, getToonMat(t.color || '#ef4444'));
+      dome.scale.set(1, 0.92, 1);
+      domeGroup.add(dome);
+      const domeOut = new THREE.Mesh(THREE_STATE.sharedGeo.dome, THREE_STATE.outlineMat);
+      domeOut.scale.set(1.08, 0.99, 1.08);
+      domeGroup.add(domeOut);
+      root.add(domeGroup);
+
+      // Optional Rotating Sawtooth Spikes Ring
+      if (cls.spikes) {
+        const spGroup = new THREE.Group();
+        spGroup.position.y = 0.35;
+        const spMat = getToonMat('#475569');
+        for (let i = 0; i < cls.spikes; i++) {
+          const a = (i * Math.PI * 2) / cls.spikes;
+          const sp = new THREE.Mesh(THREE_STATE.sharedGeo.spike, spMat);
+          sp.position.set(Math.cos(a) * 1.15, 0, Math.sin(a) * 1.15);
+          sp.rotation.z = -Math.PI / 2;
+          sp.rotation.y = -a;
+          addToonOutline(sp, THREE_STATE.sharedGeo.spike, 1.18);
+          spGroup.add(sp);
+        }
+        root.add(spGroup);
+        root.userData.spikeGroup = spGroup;
+      }
+
+      // Rotating Turret Assembly
+      const turret = new THREE.Group();
+      root.userData.turret = turret;
+      root.add(turret);
+
+      // Rear Metallic Armor Shield (LVL 99 Reference Backplate)
+      if (cls.rearArmor) {
+        const armorGeo = new THREE.CylinderGeometry(1.16, 1.22, 0.56, 14, 1, false, Math.PI * 0.6, Math.PI * 0.8);
+        const armorMesh = new THREE.Mesh(armorGeo, getToonMat('#93c5fd'));
+        armorMesh.position.y = 0.32;
+        armorMesh.rotation.y = -Math.PI / 2;
+        addToonOutline(armorMesh, armorGeo, 1.06);
+        turret.add(armorMesh);
+      }
+
+      // Sky-Blue Tubular Barrels with Dark Inner Bore & Outlines
+      cls.barrels.forEach((b) => {
+        const pivot = new THREE.Group();
+        pivot.rotation.y = -(b.angle || 0);
+
+        const slide = new THREE.Group();
+        const bLen = Math.max(0.5, b.length);
+        const bWid = Math.max(0.24, b.width);
+        const lat = b.offset || 0;
+
+        const bColor = b.flame ? '#fb923c' : (b.rail ? '#fde047' : '#7dd3fc');
+        const cyl = new THREE.Mesh(THREE_STATE.sharedGeo.barrel, getToonMat(bColor));
+        cyl.rotation.z = -Math.PI / 2;
+        cyl.scale.set(bWid, bLen, bWid);
+        cyl.position.set(bLen * 0.5, 0.36, lat);
+        slide.add(cyl);
+
+        const cylOut = new THREE.Mesh(THREE_STATE.sharedGeo.barrel, THREE_STATE.outlineMat);
+        cylOut.rotation.z = -Math.PI / 2;
+        cylOut.scale.set(bWid * 1.16, bLen + 0.08, bWid * 1.16);
+        cylOut.position.set(bLen * 0.5, 0.36, lat);
+        slide.add(cylOut);
+
+        const bore = new THREE.Mesh(THREE_STATE.sharedGeo.bore, THREE_STATE.boreMat);
+        bore.rotation.y = Math.PI / 2;
+        bore.scale.set(bWid, bWid, 1);
+        bore.position.set(bLen + 0.01, 0.36, lat);
+        slide.add(bore);
+
+        pivot.add(slide);
+        turret.add(pivot);
+        root.userData.barrelPivots.push(slide);
+      });
+
+      // Spawn Protection Bubble
+      const shieldMesh = new THREE.Mesh(
+        new THREE.SphereGeometry(1.32, 16, 12),
+        new THREE.MeshBasicMaterial({ color: '#38bdf8', transparent: true, opacity: 0.25, wireframe: true })
+      );
+      shieldMesh.position.y = 0.4;
+      shieldMesh.visible = false;
+      root.add(shieldMesh);
+      root.userData.shieldMesh = shieldMesh;
+
+      return root;
+    }
+
+    function buildFoodMesh3D(f) {
+      const grp = new THREE.Group();
+      const sh = new THREE.Mesh(
+        THREE_STATE.sharedGeo.shadow,
+        new THREE.MeshBasicMaterial({ color: '#0f172a', transparent: true, opacity: 0.18, depthWrite: false })
+      );
+      sh.rotation.x = -Math.PI / 2;
+      sh.position.y = 0.015;
+      grp.add(sh);
+
+      const geo = f.kind === 'square'
+        ? THREE_STATE.sharedGeo.foodSq
+        : (f.kind === 'triangle' ? THREE_STATE.sharedGeo.foodTri : THREE_STATE.sharedGeo.foodPent);
+
+      // Glossy rounded Roblox candy-block material (per-mesh emissive for white hit flash!)
+      const glossyMat = new THREE.MeshPhongMaterial({
+        color: new THREE.Color(f.color),
+        specular: new THREE.Color('#ffffff'),
+        shininess: 88,
+        emissive: new THREE.Color('#000000')
+      });
+
+      const bodyPivot = new THREE.Group();
+      bodyPivot.position.y = 0.68;
+
+      const mesh = new THREE.Mesh(geo, glossyMat);
+      addToonOutline(mesh, geo, 1.07);
+      bodyPivot.add(mesh);
+
+      // Glossy top specular sheen dot for extra toy-like Roblox polish
+      const glossDot = new THREE.Mesh(
+        THREE_STATE.sharedGeo.bore,
+        new THREE.MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0.36 })
+      );
+      glossDot.rotation.x = -Math.PI / 2;
+      glossDot.scale.set(0.62, 0.42, 1);
+      glossDot.position.set(-0.18, 0.64, -0.18);
+      bodyPivot.add(glossDot);
+
+      grp.add(bodyPivot);
+      grp.userData.body = bodyPivot;
+      grp.userData.mat = glossyMat;
+      grp.userData.shadow = sh;
+      return grp;
+    }
+
+    function buildBossMesh3D(b) {
+      const grp = new THREE.Group();
+      const bodyGeo = new THREE.CylinderGeometry(b.radius * 0.96, b.radius * 1.06, b.radius * 0.85, b.sides);
+      const body = new THREE.Mesh(bodyGeo, getToonMat(b.color));
+      body.position.y = b.radius * 0.45;
+      addToonOutline(body, bodyGeo, 1.06);
+      grp.add(body);
+
+      const coreGeo = new THREE.SphereGeometry(b.radius * 0.52, 20, 14, 0, Math.PI * 2, 0, Math.PI * 0.55);
+      const core = new THREE.Mesh(coreGeo, getToonMat(b.accent));
+      core.position.y = b.radius * 0.82;
+      addToonOutline(core, coreGeo, 1.07);
+      grp.add(core);
+
+      for (let i = 0; i < b.barrels; i++) {
+        const ang = (i * Math.PI * 2) / b.barrels;
+        const pivot = new THREE.Group();
+        pivot.rotation.y = -ang;
+        const cLen = b.radius * 0.72;
+        const cWid = 28;
+        const cyl = new THREE.Mesh(THREE_STATE.sharedGeo.barrel, getToonMat('#38bdf8'));
+        cyl.rotation.z = -Math.PI / 2;
+        cyl.scale.set(cWid, cLen, cWid);
+        cyl.position.set(b.radius * 0.88, b.radius * 0.45, 0);
+        pivot.add(cyl);
+
+        const cOut = new THREE.Mesh(THREE_STATE.sharedGeo.barrel, THREE_STATE.outlineMat);
+        cOut.rotation.z = -Math.PI / 2;
+        cOut.scale.set(cWid * 1.16, cLen + 5, cWid * 1.16);
+        cOut.position.set(b.radius * 0.88, b.radius * 0.45, 0);
+        pivot.add(cOut);
+
+        const bore = new THREE.Mesh(THREE_STATE.sharedGeo.bore, THREE_STATE.boreMat);
+        bore.rotation.y = Math.PI / 2;
+        bore.scale.set(cWid, cWid, 1);
+        bore.position.set(b.radius * 0.88 + cLen * 0.5 + 0.5, b.radius * 0.45, 0);
+        pivot.add(bore);
+
+        grp.add(pivot);
+      }
+      return grp;
+    }
+
+    function syncThreeScene() {
+      if (!THREE_STATE.ready) return;
+      const scene = THREE_STATE.scene;
+
+      THREE_STATE.rvbRedMesh.visible = (account.mode === 'rvb');
+      THREE_STATE.rvbBlueMesh.visible = (account.mode === 'rvb');
+
+      // Smooth 3D Spherical Orbit Camera around Player (supports full 360° yaw, pitch & zoom)
+      camYaw += (camTargetYaw - camYaw) * 0.22;
+      camPitch += (camTargetPitch - camPitch) * 0.18;
+
+      const focusX = (gameRunning && player) ? player.x : WORLD.width / 2;
+      const focusZ = (gameRunning && player) ? player.y : WORLD.height / 2;
+      const cls = (gameRunning && player) ? (TANK_CLASSES[player.classId] || TANK_CLASSES.basic) : (TANK_CLASSES[account.equippedStartTank] || TANK_CLASSES.basic);
+      const fovScale = cls.fovMul || 1;
+      const isMobileLandscape = window.innerHeight < 520 && window.innerWidth > window.innerHeight;
+      const baseDist = gameRunning
+        ? (isMobileLandscape ? 480 : (window.innerWidth < 640 ? 640 : 580)) * fovScale * camDistScale
+        : (isMobileLandscape ? 235 : (window.innerWidth < 640 ? 310 : 280));
+
+      const horizDist = Math.cos(camPitch) * baseDist;
+      const vertHeight = Math.max(120, Math.sin(camPitch) * baseDist);
+
+      const desiredX = focusX + Math.sin(camYaw) * horizDist;
+      const desiredY = vertHeight;
+      const desiredZ = focusZ + Math.cos(camYaw) * horizDist;
+
+      THREE_STATE.camSmoothX += (desiredX - THREE_STATE.camSmoothX) * 0.18;
+      THREE_STATE.camSmoothY += (desiredY - THREE_STATE.camSmoothY) * 0.18;
+      THREE_STATE.camSmoothZ += (desiredZ - THREE_STATE.camSmoothZ) * 0.18;
+
+      const shakeAmt = (screenShakeEnabled && screenShake.intensity > 0.2) ? screenShake.intensity : 0;
+      const sx = shakeAmt ? (Math.random() - 0.5) * 2 * shakeAmt : 0;
+      const sy = shakeAmt ? (Math.random() - 0.5) * 1.2 * shakeAmt : 0;
+      const sz = shakeAmt ? (Math.random() - 0.5) * 2 * shakeAmt : 0;
+
+      THREE_STATE.camera.position.set(
+        THREE_STATE.camSmoothX + sx,
+        THREE_STATE.camSmoothY + sy,
+        THREE_STATE.camSmoothZ + sz
+      );
+      THREE_STATE.camera.lookAt(
+        focusX + sx * 0.4,
+        18,
+        focusZ + sz * 0.4
+      );
+
+      // 1. Sync Tanks (Include live rotating 3D Showcase Tank while in Main Menu!)
+      let allTanks;
+      if (!gameRunning) {
+        const tNow = performance.now() * 0.001;
+        const showcaseTank = {
+          id: '__lobby_showcase__',
+          x: WORLD.width / 2,
+          y: WORLD.height / 2,
+          radius: 34,
+          hp: 100,
+          maxHp: 100,
+          color: account.color || '#ef4444',
+          classId: account.equippedStartTank || 'basic',
+          angle: Math.sin(tNow * 0.85) * 0.55 + 0.35,
+          spikeRot: tNow * 1.4,
+          spawnShield: 0,
+          barrelRecoil: [0,0,0,0,0,0,0,0,0,0,0,0]
+        };
+        allTanks = [showcaseTank];
+      } else {
+        allTanks = player ? [...entities, player] : entities;
+      }
+      const activeTankIds = new Set();
+      for (const t of allTanks) {
+        if (t.hp <= 0) continue;
+        activeTankIds.add(t.id);
+        let mesh = THREE_STATE.tankMeshes.get(t.id);
+        if (!mesh || mesh.userData.classId !== t.classId || mesh.userData.color !== t.color) {
+          if (mesh) scene.remove(mesh);
+          mesh = buildTankMesh3D(t);
+          scene.add(mesh);
+          THREE_STATE.tankMeshes.set(t.id, mesh);
+        }
+        mesh.position.set(t.x, 0, t.y);
+        mesh.scale.setScalar(t.radius);
+        mesh.userData.turret.rotation.y = -t.angle;
+        if (mesh.userData.spikeGroup) mesh.userData.spikeGroup.rotation.y = -t.spikeRot;
+        if (mesh.userData.shieldMesh) mesh.userData.shieldMesh.visible = t.spawnShield > 0;
+        const pivots = mesh.userData.barrelPivots;
+        for (let i = 0; i < pivots.length; i++) {
+          pivots[i].position.x = -(t.barrelRecoil[i] || 0) * 0.24;
+        }
+      }
+      for (const [id, mesh] of THREE_STATE.tankMeshes) {
+        if (!activeTankIds.has(id)) {
+          scene.remove(mesh);
+          THREE_STATE.tankMeshes.delete(id);
+        }
+      }
+
+      // 2. Sync Food
+      const activeFoodSet = new Set();
+      for (const f of foods) {
+        if (!f._uid) f._uid = 'f_' + Math.random().toString(36).slice(2);
+        activeFoodSet.add(f._uid);
+        let fm = THREE_STATE.foodMeshes.get(f._uid);
+        if (!fm) {
+          fm = buildFoodMesh3D(f);
+          scene.add(fm);
+          THREE_STATE.foodMeshes.set(f._uid, fm);
+        }
+        fm.position.set(f.x, 0, f.y);
+        fm.scale.setScalar(f.radius);
+        const body = fm.userData.body;
+        body.rotation.y = -f.rot;
+
+        if (f.hitBounce > 0.005) {
+          // Damped elastic jelly squash-and-stretch wave
+          const p = 1 - f.hitBounce;
+          const wave = Math.sin(p * Math.PI * 3.5) * f.hitBounce;
+          const sxz = Math.max(0.65, 1 + wave * 0.30);
+          const sy  = Math.max(0.62, 1 - wave * 0.34);
+          body.scale.set(sxz, sy, sxz);
+          body.position.y = 0.68 + Math.max(0, wave) * 0.36;
+          if (fm.userData.shadow) fm.userData.shadow.scale.setScalar(sxz);
+        } else {
+          // Subtle floating toy idle pulse
+          const bob = Math.sin(f.idlePhase || 0) * 0.04;
+          body.scale.set(1, 1, 1);
+          body.position.y = 0.68 + bob;
+          if (fm.userData.shadow) fm.userData.shadow.scale.setScalar(1);
+        }
+
+        if (fm.userData.mat) {
+          if (f.hitFlash > 0) {
+            fm.userData.mat.emissive.setHex(0xffffff);
+            fm.userData.mat.emissiveIntensity = Math.min(0.65, f.hitFlash * 5.5);
+          } else {
+            fm.userData.mat.emissive.setHex(0x000000);
+            fm.userData.mat.emissiveIntensity = 0;
+          }
+        }
+      }
+      for (const [id, mesh] of THREE_STATE.foodMeshes) {
+        if (!activeFoodSet.has(id)) {
+          scene.remove(mesh);
+          THREE_STATE.foodMeshes.delete(id);
+        }
+      }
+
+      // 3. Sync Bullets
+      const activeBulletSet = new Set();
+      for (const b of bullets) {
+        if (!b._uid) b._uid = 'b_' + Math.random().toString(36).slice(2);
+        activeBulletSet.add(b._uid);
+        let bm = THREE_STATE.bulletMeshes.get(b._uid);
+        if (!bm) {
+          bm = new THREE.Group();
+          const sph = new THREE.Mesh(THREE_STATE.sharedGeo.bullet, getToonMat(b.color));
+          addToonOutline(sph, THREE_STATE.sharedGeo.bullet, 1.18);
+          bm.add(sph);
+          scene.add(bm);
+          THREE_STATE.bulletMeshes.set(b._uid, bm);
+        }
+        bm.position.set(b.x, 12, b.y);
+        bm.scale.setScalar(b.radius);
+      }
+      for (const [id, mesh] of THREE_STATE.bulletMeshes) {
+        if (!activeBulletSet.has(id)) {
+          scene.remove(mesh);
+          THREE_STATE.bulletMeshes.delete(id);
+        }
+      }
+
+      // 4. Sync Drones
+      const activeDroneSet = new Set();
+      for (const d of drones) {
+        if (!d._uid) d._uid = 'd_' + Math.random().toString(36).slice(2);
+        activeDroneSet.add(d._uid);
+        let dm = THREE_STATE.droneMeshes.get(d._uid);
+        if (!dm) {
+          dm = new THREE.Group();
+          const cone = new THREE.Mesh(THREE_STATE.sharedGeo.drone, getToonMat(d.color));
+          cone.rotation.z = -Math.PI / 2;
+          addToonOutline(cone, THREE_STATE.sharedGeo.drone, 1.18);
+          dm.add(cone);
+          scene.add(dm);
+          THREE_STATE.droneMeshes.set(d._uid, dm);
+        }
+        dm.position.set(d.x, 18, d.y);
+        dm.scale.setScalar(d.radius * 0.85);
+        dm.rotation.y = -Math.atan2(d.vy, d.vx);
+      }
+      for (const [id, mesh] of THREE_STATE.droneMeshes) {
+        if (!activeDroneSet.has(id)) {
+          scene.remove(mesh);
+          THREE_STATE.droneMeshes.delete(id);
+        }
+      }
+
+      // 5. Sync Giant Arena Boss
+      if (arenaBoss && arenaBoss.hp > 0) {
+        if (!THREE_STATE.bossMesh || THREE_STATE.bossMeshId !== arenaBoss.id) {
+          if (THREE_STATE.bossMesh) scene.remove(THREE_STATE.bossMesh);
+          THREE_STATE.bossMesh = buildBossMesh3D(arenaBoss);
+          THREE_STATE.bossMeshId = arenaBoss.id;
+          scene.add(THREE_STATE.bossMesh);
+        }
+        THREE_STATE.bossMesh.position.set(arenaBoss.x, 0, arenaBoss.y);
+        THREE_STATE.bossMesh.rotation.y = -arenaBoss.rot;
+      } else if (THREE_STATE.bossMesh) {
+        scene.remove(THREE_STATE.bossMesh);
+        THREE_STATE.bossMesh = null;
+        THREE_STATE.bossMeshId = null;
+      }
+
+      // 6. Sync 3D Cartoon Cube Particles
+      const activePartSet = new Set();
+      for (const p of particles) {
+        if (!p._uid) p._uid = 'p_' + Math.random().toString(36).slice(2);
+        activePartSet.add(p._uid);
+        let pm = THREE_STATE.particleMeshes.get(p._uid);
+        if (!pm) {
+          pm = new THREE.Mesh(THREE_STATE.sharedGeo.particle, getToonMat(p.color));
+          scene.add(pm);
+          THREE_STATE.particleMeshes.set(p._uid, pm);
+        }
+        const s = Math.max(0.1, p.size * (p.life / p.maxLife) * 1.4);
+        pm.position.set(p.x, 10 + (1 - p.life / p.maxLife) * 26, p.y);
+        pm.scale.setScalar(s);
+        pm.rotation.x += 0.12;
+        pm.rotation.y += 0.15;
+      }
+      for (const [id, mesh] of THREE_STATE.particleMeshes) {
+        if (!activePartSet.has(id)) {
+          scene.remove(mesh);
+          THREE_STATE.particleMeshes.delete(id);
+        }
+      }
+
+      // 7. Sync 3D Cartoon Muzzle Flashes (Glowing Starburst Cone + Core Sphere)
+      const activeFlashSet = new Set();
+      for (const fl of muzzleFlashes) {
+        if (!fl._uid) fl._uid = 'fl_' + Math.random().toString(36).slice(2);
+        activeFlashSet.add(fl._uid);
+        let fm = THREE_STATE.flashMeshes.get(fl._uid);
+        if (!fm) {
+          fm = new THREE.Group();
+          const coneMat = new THREE.MeshBasicMaterial({ color: fl.color, transparent: true, opacity: 0.92 });
+          const coreMat = new THREE.MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0.96 });
+          const cone = new THREE.Mesh(THREE_STATE.sharedGeo.flashCone, coneMat);
+          cone.rotation.z = -Math.PI / 2;
+          cone.position.x = 0.85;
+          const core = new THREE.Mesh(THREE_STATE.sharedGeo.flashCore, coreMat);
+          fm.add(cone);
+          fm.add(core);
+          fm.userData = { coneMat, coreMat };
+          scene.add(fm);
+          THREE_STATE.flashMeshes.set(fl._uid, fm);
+        }
+        const tRatio = Math.max(0.05, fl.life / fl.maxLife);
+        const s = fl.size * (0.65 + (1 - tRatio) * 0.65);
+        fm.position.set(fl.x, 13, fl.y);
+        fm.rotation.y = -fl.angle;
+        fm.scale.set(s, s * 0.78, s * 0.78);
+        fm.userData.coneMat.opacity = tRatio * 0.9;
+        fm.userData.coreMat.opacity = tRatio;
+      }
+      for (const [id, mesh] of THREE_STATE.flashMeshes) {
+        if (!activeFlashSet.has(id)) {
+          scene.remove(mesh);
+          THREE_STATE.flashMeshes.delete(id);
+        }
+      }
+
+      THREE_STATE.renderer.render(scene, THREE_STATE.camera);
+    }
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      if (THREE_STATE.ready) {
+        THREE_STATE.camera.aspect = window.innerWidth / window.innerHeight;
+        THREE_STATE.camera.updateProjectionMatrix();
+        THREE_STATE.renderer.setSize(window.innerWidth, window.innerHeight);
+      }
+    }
+    window.addEventListener('resize', resizeCanvas);
+    initThreeEngine();
+    resizeCanvas();
+
+    // Renders the exact cartoon 3D glossy red dome + sky-blue tubular barrels with dark bore holes
+    // seen in the 7x3 Tank Game! LVL 1 -> LVL 99 artwork.
+    function drawCartoonTank(g, t, scale = 1, overrideAngle = null) {
+      const cls = TANK_CLASSES[t.classId] || TANK_CLASSES.basic;
+      const r = t.radius * scale;
+      const ang = overrideAngle !== null ? overrideAngle : t.angle;
+
+      g.save();
+      g.translate(t.x, t.y);
+
+      // Soft Drop Shadow on Roblox Stud Floor
+      g.fillStyle = 'rgba(15, 23, 42, 0.16)';
+      g.beginPath();
+      g.ellipse(0, r * 0.28, r * 1.18, r * 0.92, 0, 0, Math.PI * 2);
+      g.fill();
+
+      // Optional Rotating Sawtooth Spikes (Spiker / UltraSpiker / Snowflake)
+      if (cls.spikes) {
+        g.save();
+        g.rotate(t.spikeRot || 0);
+        g.fillStyle = '#334155';
+        g.strokeStyle = '#0f172a';
+        g.lineWidth = 3 * scale;
+        const n = cls.spikes;
+        g.beginPath();
+        for (let i = 0; i < n * 2; i++) {
+          const rad = (i % 2 === 0) ? r * 1.32 : r * 0.92;
+          const a = (i * Math.PI) / n;
+          const px = Math.cos(a) * rad;
+          const py = Math.sin(a) * rad;
+          if (i === 0) g.moveTo(px, py);
+          else g.lineTo(px, py);
+        }
+        g.closePath();
+        g.fill();
+        g.stroke();
+        g.restore();
+      }
+
+      // Rotate to turret aiming direction
+      g.save();
+      g.rotate(ang);
+
+      // Rear Metallic Armor Shield (seen on LVL 99 tank backplate!)
+      if (cls.rearArmor) {
+        g.fillStyle = '#93c5fd';
+        g.strokeStyle = '#0f172a';
+        g.lineWidth = 3 * scale;
+        g.beginPath();
+        g.arc(0, 0, r * 1.16, Math.PI * 0.62, Math.PI * 1.38);
+        g.lineTo(Math.cos(Math.PI * 1.38) * r * 0.85, Math.sin(Math.PI * 1.38) * r * 0.85);
+        g.arc(0, 0, r * 0.85, Math.PI * 1.38, Math.PI * 0.62, true);
+        g.closePath();
+        g.fill();
+        g.stroke();
+      }
+
+      // Draw Sky-Blue Cylindrical Barrels + Dark Inner Bore Hole
+      const barrels = cls.barrels;
+      for (let i = 0; i < barrels.length; i++) {
+        const b = barrels[i];
+        const recoilOffset = (t.barrelRecoil ? (t.barrelRecoil[i] || 0) : 0) * r * 0.22;
+        const bLen = r * b.length - recoilOffset;
+        const bWid = r * b.width;
+        const lat = r * (b.offset || 0);
+
+        g.save();
+        g.rotate(b.angle || 0);
+        g.translate(0, lat);
+
+        // Barrel body (light sky blue with glossy gradient & bold outline)
+        const bGrad = g.createLinearGradient(0, -bWid / 2, 0, bWid / 2);
+        if (b.flame) {
+          bGrad.addColorStop(0, '#fdba74');
+          bGrad.addColorStop(0.5, '#f97316');
+          bGrad.addColorStop(1, '#c2410c');
+        } else if (b.rail) {
+          bGrad.addColorStop(0, '#fef08a');
+          bGrad.addColorStop(0.5, '#38bdf8');
+          bGrad.addColorStop(1, '#0284c7');
+        } else {
+          bGrad.addColorStop(0, '#bae6fd');
+          bGrad.addColorStop(0.45, '#7dd3fc');
+          bGrad.addColorStop(1, '#38bdf8');
+        }
+
+        g.fillStyle = bGrad;
+        g.strokeStyle = '#0f172a';
+        g.lineWidth = Math.max(2.2, 3.2 * scale);
+
+        // Rounded cylinder tube
+        g.beginPath();
+        g.roundRect(r * 0.15, -bWid / 2, Math.max(6, bLen - r * 0.15), bWid, bWid * 0.28);
+        g.fill();
+        g.stroke();
+
+        // Muzzle Rim & Dark Hollow Bore (Signature look from reference image)
+        const tipX = bLen;
+        g.fillStyle = '#7dd3fc';
+        g.beginPath();
+        g.ellipse(tipX, 0, bWid * 0.24, bWid * 0.5, 0, 0, Math.PI * 2);
+        g.fill();
+        g.stroke();
+
+        g.fillStyle = '#0f172a';
+        g.beginPath();
+        g.ellipse(tipX, 0, bWid * 0.13, bWid * 0.30, 0, 0, Math.PI * 2);
+        g.fill();
+
+        g.restore();
+      }
+      g.restore(); // End barrel rotation
+
+      // Main 3D Glossy Hemisphere Dome Body
+      const baseColor = t.color || '#ef4444';
+      const domeGrad = g.createRadialGradient(-r * 0.32, -r * 0.35, r * 0.1, 0, 0, r);
+      domeGrad.addColorStop(0, lightenHex(baseColor, 48));
+      domeGrad.addColorStop(0.45, baseColor);
+      domeGrad.addColorStop(1, darkenHex(baseColor, 36));
+
+      g.fillStyle = domeGrad;
+      g.strokeStyle = '#0f172a';
+      g.lineWidth = Math.max(2.6, 3.6 * scale);
+      g.beginPath();
+      g.arc(0, 0, r, 0, Math.PI * 2);
+      g.fill();
+      g.stroke();
+
+      // Specular Cartoon Highlight Arc on Top-Left of Dome
+      g.fillStyle = 'rgba(255, 255, 255, 0.38)';
+      g.beginPath();
+      g.ellipse(-r * 0.28, -r * 0.32, r * 0.36, r * 0.20, -0.45, 0, Math.PI * 2);
+      g.fill();
+
+      // Spawn Protection Bubble
+      if (t.spawnShield > 0) {
+        g.strokeStyle = 'rgba(56, 189, 248, 0.75)';
+        g.lineWidth = 3;
+        g.setLineDash([6, 5]);
+        g.beginPath();
+        g.arc(0, 0, r * 1.28, 0, Math.PI * 2);
+        g.stroke();
+        g.setLineDash([]);
+      }
+
+      g.restore();
+    }
+
+    function lightenHex(hex, amt) {
+      const num = parseInt(hex.replace('#', ''), 16);
+      const r = Math.min(255, (num >> 16) + amt);
+      const g = Math.min(255, ((num >> 8) & 0xff) + amt);
+      const b = Math.min(255, (num & 0xff) + amt);
+      return `rgb(${r},${g},${b})`;
+    }
+
+    function darkenHex(hex, amt) {
+      const num = parseInt(hex.replace('#', ''), 16);
+      const r = Math.max(0, (num >> 16) - amt);
+      const g = Math.max(0, ((num >> 8) & 0xff) - amt);
+      const b = Math.max(0, (num & 0xff) - amt);
+      return `rgb(${r},${g},${b})`;
+    }
+
+    function drawPolygonFood(g, f) {
+      g.save();
+      g.translate(f.x, f.y);
+      g.rotate(f.rot);
+
+      // Shadow
+      g.fillStyle = 'rgba(15, 23, 42, 0.12)';
+      g.beginPath();
+      for (let i = 0; i < f.sides; i++) {
+        const a = (i * Math.PI * 2) / f.sides;
+        const px = Math.cos(a) * f.radius + 3;
+        const py = Math.sin(a) * f.radius + 5;
+        if (i === 0) g.moveTo(px, py);
+        else g.lineTo(px, py);
+      }
+      g.closePath();
+      g.fill();
+
+      // Main Polygon
+      g.fillStyle = f.color;
+      g.strokeStyle = '#0f172a';
+      g.lineWidth = f.isBoss ? 4.5 : 3;
+      g.lineJoin = 'round';
+      g.beginPath();
+      for (let i = 0; i < f.sides; i++) {
+        const a = (i * Math.PI * 2) / f.sides;
+        const px = Math.cos(a) * f.radius;
+        const py = Math.sin(a) * f.radius;
+        if (i === 0) g.moveTo(px, py);
+        else g.lineTo(px, py);
+      }
+      g.closePath();
+      g.fill();
+      g.stroke();
+
+      // Inner bevel highlight
+      g.fillStyle = 'rgba(255,255,255,0.25)';
+      g.beginPath();
+      for (let i = 0; i < f.sides; i++) {
+        const a = (i * Math.PI * 2) / f.sides;
+        const px = Math.cos(a) * (f.radius * 0.55);
+        const py = Math.sin(a) * (f.radius * 0.55);
+        if (i === 0) g.moveTo(px, py);
+        else g.lineTo(px, py);
+      }
+      g.closePath();
+      g.fill();
+      g.restore();
+
+      // Health bar if damaged
+      if (f.hp < f.maxHp) {
+        const bw = Math.max(28, f.radius * 1.4);
+        g.fillStyle = '#0f172a';
+        g.fillRect(f.x - bw / 2 - 1, f.y + f.radius + 8, bw + 2, 7);
+        g.fillStyle = '#22c55e';
+        g.fillRect(f.x - bw / 2, f.y + f.radius + 9, bw * Math.max(0, f.hp / f.maxHp), 5);
+      }
+    }
+
+    function renderArena() {
+      syncThreeScene();
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Damaged Food Health Bars
+      for (const f of foods) {
+        if (f.hp >= f.maxHp) continue;
+        const scr = projectToScreen3D(f.x, f.radius * 1.45, f.y);
+        if (!scr.visible || scr.x < -50 || scr.x > canvas.width + 50 || scr.y < -50 || scr.y > canvas.height + 50) continue;
+        const bw = f.isBoss ? 72 : 34;
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(scr.x - bw / 2 - 1, scr.y - 4, bw + 2, 7);
+        ctx.fillStyle = '#22c55e';
+        ctx.fillRect(scr.x - bw / 2, scr.y - 3, bw * Math.max(0, f.hp / f.maxHp), 5);
+      }
+
+      // Giant Arena Boss Overhead Label
+      if (arenaBoss && arenaBoss.hp > 0) {
+        const bscr = projectToScreen3D(arenaBoss.x, arenaBoss.radius * 1.65, arenaBoss.y);
+        if (bscr.visible) {
+          ctx.save();
+          ctx.font = '900 16px Fredoka, Inter, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.lineWidth = 4.5;
+          ctx.strokeStyle = '#0f172a';
+          ctx.strokeText(arenaBoss.name, bscr.x, bscr.y);
+          ctx.fillStyle = '#fde047';
+          ctx.fillText(arenaBoss.name, bscr.x, bscr.y);
+          ctx.restore();
+        }
+      }
+
+      // Tanks Nameplates & Health Bars
+      const allTanks = player ? [...entities, player] : entities;
+      for (const t of allTanks) {
+        if (t.hp <= 0) continue;
+        const topScr = projectToScreen3D(t.x, t.radius * 1.45 + 14, t.y);
+        if (!topScr.visible || topScr.x < -80 || topScr.x > canvas.width + 80 || topScr.y < -50 || topScr.y > canvas.height + 50) continue;
+
+        ctx.save();
+        ctx.font = '900 13px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.lineWidth = 3.5;
+        ctx.strokeStyle = '#0f172a';
+        const label = `[Lv.${t.level}] ${t.name}`;
+        ctx.strokeText(label, topScr.x, topScr.y);
+        ctx.fillStyle = t.isPlayer ? '#fde047' : '#ffffff';
+        ctx.fillText(label, topScr.x, topScr.y);
+
+        if (t.hp < t.maxHp) {
+          const bw = Math.max(46, t.radius * 1.5);
+          const bx = topScr.x - bw / 2;
+          const by = topScr.y + 8;
+          ctx.fillStyle = '#0f172a';
+          ctx.beginPath();
+          ctx.roundRect(bx - 1.5, by - 1.5, bw + 3, 9, 4);
+          ctx.fill();
+          ctx.fillStyle = t.isPlayer ? '#22c55e' : '#f43f5e';
+          ctx.beginPath();
+          ctx.roundRect(bx, by, bw * Math.max(0, t.hp / t.maxHp), 6, 3);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+
+      // Floating XP / Damage / Boss Texts
+      for (const ft of floatTexts) {
+        const scr = projectToScreen3D(ft.x, 42 + (1 - ft.life / ft.maxLife) * 45, ft.y);
+        if (!scr.visible) continue;
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, ft.life / ft.maxLife);
+        ctx.font = `900 ${ft.size}px Inter, sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.lineWidth = 3.5;
+        ctx.strokeStyle = '#0f172a';
+        ctx.strokeText(ft.text, scr.x, scr.y);
+        ctx.fillStyle = ft.color;
+        ctx.fillText(ft.text, scr.x, scr.y);
+        ctx.restore();
+      }
+
+      // Screen-Space Boss Pointer, Touch Reticle & Mobile Virtual Joysticks
+      if (gameRunning && player) {
+        if (touchOrbitMode) {
+          ctx.save();
+          ctx.strokeStyle = 'rgba(15, 23, 42, 0.55)';
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(canvas.width / 2, canvas.height * 0.44, 4.5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+          ctx.restore();
+        }
+        if (arenaBoss && arenaBoss.hp > 0) {
+          drawBossEdgeArrow();
+        }
+        drawTouchJoysticks();
+      }
+    }
+
+    function drawArenaBossEntity(g, b) {
+      g.save();
+      g.translate(b.x, b.y);
+
+      // Shadow
+      g.fillStyle = 'rgba(15, 23, 42, 0.24)';
+      g.beginPath();
+      g.ellipse(0, b.radius * 0.25, b.radius * 1.22, b.radius * 0.96, 0, 0, Math.PI * 2);
+      g.fill();
+
+      g.rotate(b.rot);
+
+      // Radial Heavy Boss Cannons
+      for (let i = 0; i < b.barrels; i++) {
+        g.save();
+        g.rotate((i * Math.PI * 2) / b.barrels);
+        g.fillStyle = '#38bdf8';
+        g.strokeStyle = '#0f172a';
+        g.lineWidth = 4;
+        g.beginPath();
+        g.roundRect(b.radius * 0.45, -16, b.radius * 0.76, 32, 8);
+        g.fill();
+        g.stroke();
+
+        g.fillStyle = '#0f172a';
+        g.beginPath();
+        g.ellipse(b.radius * 1.2, 0, 5, 11, 0, 0, Math.PI * 2);
+        g.fill();
+        g.restore();
+      }
+
+      // Armored Polygon Fortress Body
+      const grad = g.createRadialGradient(-b.radius * 0.25, -b.radius * 0.25, 10, 0, 0, b.radius);
+      grad.addColorStop(0, b.accent);
+      grad.addColorStop(0.55, b.color);
+      grad.addColorStop(1, '#1e1b4b');
+
+      g.fillStyle = grad;
+      g.strokeStyle = '#0f172a';
+      g.lineWidth = 6;
+      g.lineJoin = 'round';
+      g.beginPath();
+      for (let i = 0; i < b.sides; i++) {
+        const a = (i * Math.PI * 2) / b.sides;
+        const px = Math.cos(a) * b.radius;
+        const py = Math.sin(a) * b.radius;
+        if (i === 0) g.moveTo(px, py);
+        else g.lineTo(px, py);
+      }
+      g.closePath();
+      g.fill();
+      g.stroke();
+
+      // Inner Glowing Core Dome
+      g.fillStyle = 'rgba(255, 255, 255, 0.28)';
+      g.beginPath();
+      g.arc(0, 0, b.radius * 0.45, 0, Math.PI * 2);
+      g.fill();
+      g.stroke();
+      g.restore();
+
+      // Overhead Boss Title
+      g.save();
+      g.font = '900 16px Fredoka, Inter, sans-serif';
+      g.textAlign = 'center';
+      g.lineWidth = 4.5;
+      g.strokeStyle = '#0f172a';
+      g.strokeText(b.name, b.x, b.y - b.radius - 22);
+      g.fillStyle = '#fde047';
+      g.fillText(b.name, b.x, b.y - b.radius - 22);
+      g.restore();
+    }
+
+    function drawBossEdgeArrow() {
+      const dx = arenaBoss.x - player.x;
+      const dy = arenaBoss.y - player.y;
+      const dist = Math.hypot(dx, dy);
+      if (dist < 520) return;
+      const ang = Math.atan2(dy, dx);
+      const r = Math.min(canvas.width, canvas.height) * 0.36;
+      const ax = canvas.width / 2 + Math.cos(ang) * r;
+      const ay = canvas.height / 2 + Math.sin(ang) * r;
+
+      ctx.save();
+      ctx.translate(ax, ay);
+      ctx.rotate(ang);
+      ctx.fillStyle = '#f43f5e';
+      ctx.strokeStyle = '#0f172a';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(16, 0);
+      ctx.lineTo(-10, -11);
+      ctx.lineTo(-5, 0);
+      ctx.lineTo(-10, 11);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+
+      ctx.save();
+      ctx.font = '900 11px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#fda4af';
+      ctx.strokeStyle = '#0f172a';
+      ctx.lineWidth = 3;
+      ctx.strokeText('BOSS', ax, ay + 22);
+      ctx.fillText('BOSS', ax, ay + 22);
+      ctx.restore();
+    }
+
+    function drawMinimap() {
+      const size = window.innerWidth < 640 ? 60 : 96;
+      const pad = window.innerWidth < 640 ? 8 : 12;
+      const mx = canvas.width - size - pad;
+      const my = canvas.height - size - pad;
+
+      ctx.save();
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.78)';
+      ctx.strokeStyle = '#0f172a';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.roundRect(mx, my, size, size, 12);
+      ctx.fill();
+      ctx.stroke();
+
+      // Center nest
+      ctx.fillStyle = 'rgba(129, 140, 248, 0.32)';
+      ctx.beginPath();
+      ctx.arc(mx + size / 2, my + size / 2, size * 0.15, 0, Math.PI * 2);
+      ctx.fill();
+
+      if (account.mode === 'rvb') {
+        ctx.fillStyle = 'rgba(239, 68, 68, 0.35)';
+        ctx.fillRect(mx + 2, my + 2, size * 0.12, size - 4);
+        ctx.fillStyle = 'rgba(59, 130, 246, 0.35)';
+        ctx.fillRect(mx + size * 0.88 - 2, my + 2, size * 0.12, size - 4);
+      }
+
+      // Alpha boss dots
+      for (const f of foods) {
+        if (!f.isBoss) continue;
+        ctx.fillStyle = '#a78bfa';
+        ctx.beginPath();
+        ctx.arc(mx + (f.x / WORLD.width) * size, my + (f.y / WORLD.height) * size, 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Giant Arena Boss pulsing marker on Minimap
+      if (arenaBoss && arenaBoss.hp > 0) {
+        const bx = mx + (arenaBoss.x / WORLD.width) * size;
+        const by = my + (arenaBoss.y / WORLD.height) * size;
+        ctx.fillStyle = '#f43f5e';
+        ctx.strokeStyle = '#fde047';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(bx, by, 5.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      }
+
+      // Bots dots
+      for (const b of entities) {
+        ctx.fillStyle = b.team === 'blue' ? '#60a5fa' : (b.team === 'red' ? '#f87171' : '#94a3b8');
+        ctx.beginPath();
+        ctx.arc(mx + (b.x / WORLD.width) * size, my + (b.y / WORLD.height) * size, 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Player dot
+      const px = mx + (player.x / WORLD.width) * size;
+      const py = my + (player.y / WORLD.height) * size;
+      ctx.fillStyle = '#fde047';
+      ctx.strokeStyle = '#0f172a';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(px, py, 4.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawTouchJoysticks() {
+      for (const stick of [input.moveStick, input.aimStick]) {
+        if (!stick.active) continue;
+        ctx.save();
+        ctx.strokeStyle = 'rgba(15, 23, 42, 0.45)';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(stick.startX, stick.startY, 46, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = stick === input.moveStick ? 'rgba(59, 130, 246, 0.8)' : 'rgba(239, 68, 68, 0.8)';
+        ctx.beginPath();
+        ctx.arc(stick.startX + stick.dx * 36, stick.startY + stick.dy * 36, 20, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    // =========================================================================
+    // 9. LOBBY PREVIEW BANNER (Recreates Uploaded LVL 1 -> LVL 99 Split Graphic)
+    // =========================================================================
+    function renderLobbyBanner() {
+      return; // Live 3D Three.js showcase replaces static 2D banner
+      const g = pCanvas.getContext('2d');
+      const w = pCanvas.width;
+      const h = pCanvas.height;
+      g.clearRect(0, 0, w, h);
+
+      // Checkerboard floor
+      g.fillStyle = '#ffffff';
+      g.fillRect(0, 0, w, h);
+      g.fillStyle = '#eef2f6';
+      const gs = 22;
+      for (let r = 0; r < h / gs; r++) {
+        for (let c = 0; c < w / gs; c++) {
+          if ((r + c) % 2 === 0) g.fillRect(c * gs, r * gs, gs, gs);
+        }
+      }
+
+      // Left Tank: LVL 1 Basic
+      const leftTank = {
+        x: 92, y: 112, radius: 28, color: account.color, classId: 'basic',
+        angle: 0.45, spawnShield: 0, spikeRot: 0
+      };
+      drawCartoonTank(g, leftTank, 1.05, 0.55);
+
+      // Right Tank: LVL 99 Multi-Barrel Fan (or currently equipped secret)
+      const previewRightId = (account.equippedStartTank !== 'basic') ? account.equippedStartTank : 'spread99';
+      const rightTank = {
+        x: 278, y: 108, radius: 38, color: account.color, classId: previewRightId,
+        angle: 0.42, spawnShield: 0, spikeRot: 0.3
+      };
+      drawCartoonTank(g, rightTank, 1.02, 0.42);
+
+      // Diagonal Divider Line
+      g.strokeStyle = '#0f172a';
+      g.lineWidth = 4;
+      g.beginPath();
+      g.moveTo(w * 0.47, 0);
+      g.lineTo(w * 0.41, h);
+      g.stroke();
+
+      // LVL 1 & LVL 99 Header Texts
+      g.font = '900 26px Fredoka, Inter, sans-serif';
+      g.lineWidth = 5;
+      g.strokeStyle = '#0f172a';
+
+      g.strokeText('LVL', 24, 34);
+      g.fillStyle = '#ffffff';
+      g.fillText('LVL', 24, 34);
+
+      g.strokeText('1', 82, 34);
+      g.fillStyle = '#ef4444';
+      g.fillText('1', 82, 34);
+
+      g.strokeText('LVL', 195, 34);
+      g.fillStyle = '#ffffff';
+      g.fillText('LVL', 195, 34);
+
+      g.strokeText('99', 256, 34);
+      g.fillStyle = '#fbbf24';
+      g.fillText('99', 256, 34);
+
+      // Curved Red Upgrade Arrow
+      g.fillStyle = '#ef4444';
+      g.strokeStyle = '#ffffff';
+      g.lineWidth = 2.5;
+      g.beginPath();
+      g.moveTo(132, 138);
+      g.quadraticCurveTo(162, 162, 192, 148);
+      g.lineTo(188, 138);
+      g.lineTo(212, 150);
+      g.lineTo(192, 168);
+      g.lineTo(193, 157);
+      g.quadraticCurveTo(156, 170, 132, 138);
+      g.closePath();
+      g.fill();
+      g.stroke();
+    }
+
+    // =========================================================================
+    // 10. HUD, UPGRADES, CODES, CHESTS & TRADING UI BINDINGS
+    // =========================================================================
+    let toastTimer = null;
+    function showToast(msg) {
+      const el = document.getElementById('toastBanner');
+      el.textContent = msg;
+      el.style.opacity = '1';
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { el.style.opacity = '0'; }, 2400);
+    }
+
+    function buildStatsRows() {
+      const container = document.getElementById('statsRows');
+      container.innerHTML = '';
+      STAT_DEFS.forEach((st) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.dataset.stat = st.key;
+        btn.className = 'stat-plus-btn flex items-stretch gap-1 w-full text-left active:translate-y-0.5 transition';
+        btn.innerHTML = `
+          <div class="rbx-stat-bar flex-1 rounded-lg px-2 py-1 flex items-center gap-1.5 overflow-hidden relative" style="background-color:${st.bg}">
+            <div id="statBar_${st.key}" class="absolute inset-y-0 left-0 bg-white/25 transition-all duration-150 pointer-events-none" style="width:0%;"></div>
+            <span class="relative z-10">${STAT_SVG[st.key]}</span>
+            <span class="relative z-10 outline-text-sm text-white font-black text-xs sm:text-sm truncate">${st.label}</span>
+          </div>
+          <div id="statVal_${st.key}" class="rbx-stat-valbox w-8 sm:w-9 rounded-lg flex items-center justify-center outline-text-sm text-white font-black text-xs sm:text-sm shrink-0" style="background-color:${st.color}">0</div>
+        `;
+        btn.addEventListener('click', () => upgradePlayerStat(st.key));
+        container.appendChild(btn);
+      });
+    }
+
+    function upgradePlayerStat(key) {
+      if (!player || player.statPoints <= 0) return;
+      if (player.stats[key] >= 12) return;
+      player.stats[key]++;
+      player.statPoints--;
+      if (player.statPoints <= 0 && window.innerWidth < 640) {
+        statsDrawerOpen = false;
+        document.getElementById('statsDrawer').classList.add('hidden');
+      }
+      recalcTankStats(player, false);
+      SFX.play('pop');
+      updateHudUI();
+    }
+
+    function checkPlayerEvoPrompt() {
+      const panel = document.getElementById('evoPanel');
+      const choicesEl = document.getElementById('evoChoices');
+      if (!player) { panel.classList.add('hidden'); return; }
+
+      const currentCls = TANK_CLASSES[player.classId] || TANK_CLASSES.basic;
+      if (currentCls.rarity) {
+        panel.classList.add('hidden');
+        return;
+      }
+
+      let nextTier = 0;
+      if (player.level >= 10 && currentCls.tier < 1) nextTier = 1;
+      else if (player.level >= 25 && currentCls.tier < 2) nextTier = 2;
+      else if (player.level >= 45 && currentCls.tier < 3) nextTier = 3;
+      else if (player.level >= 75 && currentCls.tier < 4) nextTier = 4;
+
+      const evoBadge = document.getElementById('evoCountBadge');
+      if (!nextTier) {
+        panel.classList.add('hidden');
+        if (evoBadge) evoBadge.classList.add('hidden');
+        return;
+      }
+      if (evoBadge) {
+        evoBadge.textContent = (EVO_TREE[nextTier] || []).length;
+        evoBadge.classList.remove('hidden');
+      }
+
+      const options = EVO_TREE[nextTier] || [];
+      document.getElementById('evoTierBadge').textContent = `TIER ${nextTier}`;
+      choicesEl.innerHTML = '';
+
+      options.forEach(cid => {
+        const cDef = TANK_CLASSES[cid];
+        const lockedGroup = cDef.groupRequired && !account.joinedGroup;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `rbx-btn p-1.5 rounded-xl text-left text-[11px] font-black ${lockedGroup ? 'bg-slate-200 text-slate-500' : 'bg-white hover:bg-amber-100 text-slate-900'}`;
+        btn.innerHTML = `
+          <div class="truncate">${cDef.name}</div>
+          <div class="text-[9px] font-bold ${lockedGroup ? 'text-rose-600' : 'text-slate-500'}">${lockedGroup ? '需在大厅加入社区' : `${cDef.barrels.length} 炮管分支`}</div>
+        `;
+        btn.addEventListener('click', () => {
+          if (lockedGroup) {
+            showToast('返回大厅点击右上角【加入玩家社区】即可免费解锁 Flame!');
+            return;
+          }
+          player.classId = cid;
+          markTankDiscovered(cid);
+          recalcTankStats(player, false);
+          SFX.play('levelup');
+          spawnFloatText(player.x, player.y - player.radius - 20, `进化: ${cDef.name}!`, '#38bdf8', 17);
+          checkPlayerEvoPrompt();
+          updateHudUI();
+        });
+        choicesEl.appendChild(btn);
+      });
+
+      panel.classList.remove('hidden');
+    }
+
+    function updateHudUI() {
+      document.getElementById('gemsText').textContent = account.gems.toLocaleString();
+      document.getElementById('chestGemsCount').textContent = account.gems.toLocaleString();
+      const lg = document.getElementById('lobbyGemsText');
+      if (lg) lg.textContent = account.gems.toLocaleString();
+      const ln = document.getElementById('lobbyNameText');
+      if (ln) ln.textContent = account.name || 'TankPlayer';
+      const lbl = document.getElementById('lobbyBestLvlText');
+      if (lbl) lbl.textContent = `Best Lv.${account.lifetimeStats.maxLevel || 1}`;
+      const lic = document.getElementById('lobbyIndexCount');
+      const lpf = document.getElementById('lobbyProgressFill');
+      if (lic && lpf) {
+        const totalCls = Object.keys(TANK_CLASSES).length;
+        const disc = account.discoveredTanks.length;
+        lic.textContent = `${disc}/${totalCls}`;
+        lpf.style.width = `${Math.round((disc / totalCls) * 100)}%`;
+      }
+
+      if (!player) return;
+      const cls = TANK_CLASSES[player.classId] || TANK_CLASSES.basic;
+      document.getElementById('tankClassLabel').textContent = cls.name;
+      const secretTag = document.getElementById('secretTag');
+      if (cls.rarity) {
+        secretTag.textContent = cls.rarity;
+        secretTag.classList.remove('hidden');
+      } else {
+        secretTag.classList.add('hidden');
+      }
+
+      document.getElementById('lvlText').textContent = `等级 ${player.level}`;
+      const topLvl = document.getElementById('topLvlLabel');
+      if (topLvl) topLvl.textContent = `等级 ${player.level}`;
+      document.getElementById('xpText').textContent = player.level >= 99
+        ? 'MAX LVL 99'
+        : `${Math.floor(player.xp).toLocaleString()}/${player.nextXp.toLocaleString()}`;
+      const pct = player.level >= 99 ? 100 : Math.min(100, (player.xp / player.nextXp) * 100);
+      document.getElementById('xpFill').style.width = `${pct}%`;
+
+      const spBadge = document.getElementById('statPointsBadge');
+      spBadge.textContent = player.statPoints;
+      spBadge.classList.toggle('hidden', player.statPoints <= 0);
+      const rDot = document.getElementById('rightStatDot');
+      if (rDot) {
+        rDot.textContent = player.statPoints;
+        rDot.classList.toggle('hidden', player.statPoints <= 0);
+      }
+
+      const shieldCrest = document.getElementById('spawnShieldCrest');
+      if (shieldCrest) {
+        shieldCrest.classList.toggle('hidden', player.spawnShield <= 0);
+      }
+
+      STAT_DEFS.forEach(st => {
+        const val = player.stats[st.key];
+        const vEl = document.getElementById(`statVal_${st.key}`);
+        const bEl = document.getElementById(`statBar_${st.key}`);
+        if (vEl) vEl.textContent = `${val}`;
+        if (bEl) bEl.style.width = `${(val / 12) * 100}%`;
+      });
+
+      document.querySelectorAll('.stat-plus-btn').forEach(btn => {
+        const k = btn.dataset.stat;
+        btn.disabled = player.statPoints <= 0 || player.stats[k] >= 12;
+      });
+
+      if (account.mode === 'rvb') {
+        document.getElementById('redScoreText').textContent = rvbScores.red;
+        document.getElementById('blueScoreText').textContent = rvbScores.blue;
+      }
+
+      // Boss HUD sync
+      const cdBadge = document.getElementById('bossCountdownBadge');
+      const hpPanel = document.getElementById('bossHpPanel');
+      if (arenaBoss && arenaBoss.hp > 0) {
+        cdBadge.classList.add('hidden');
+        hpPanel.classList.remove('hidden');
+        document.getElementById('bossNameLabel').textContent = arenaBoss.name;
+        document.getElementById('bossHpText').textContent = `${Math.ceil(arenaBoss.hp).toLocaleString()} / ${arenaBoss.maxHp.toLocaleString()}`;
+        document.getElementById('bossHpFill').style.width = `${Math.max(0, (arenaBoss.hp / arenaBoss.maxHp) * 100)}%`;
+      } else {
+        hpPanel.classList.add('hidden');
+        cdBadge.classList.remove('hidden');
+        document.getElementById('bossTimerText').textContent = `${Math.max(1, Math.ceil(bossSpawnTimer))}s`;
+      }
+    }
+
+    function updateLeaderboardUI() {
+      if (!gameRunning || !player) return;
+      const all = [player, ...entities].filter(t => t.hp > 0);
+      all.sort((a, b) => (b.level * 100000 + b.score) - (a.level * 100000 + a.score));
+      const top4 = all.slice(0, 4);
+      const lb = document.getElementById('leaderboardList');
+      lb.innerHTML = top4.map((t, idx) => `
+        <div class="bg-slate-900/68 backdrop-blur-sm rounded-lg px-2 py-0.5 flex items-center justify-between text-[10px] sm:text-[11px] border border-white/10 shadow-sm">
+          <div class="flex items-center gap-1 min-w-0">
+            <span class="w-3.5 h-3.5 rounded bg-slate-800 text-[9px] font-black text-slate-300 flex items-center justify-center shrink-0">${idx + 1}</span>
+            <span class="truncate font-bold ${t.isPlayer ? 'text-amber-300' : 'text-white'}">${t.name}</span>
+          </div>
+          <span class="font-black text-amber-300 ml-1 shrink-0">${t.level}</span>
+        </div>
+      `).join('');
+    }
+
+    function refreshLobbyInventoryUI() {
+      const inv = document.getElementById('inventoryList');
+      inv.innerHTML = '';
+      account.ownedTanks.forEach(tid => {
+        const def = TANK_CLASSES[tid];
+        if (!def) return;
+        const active = account.equippedStartTank === tid;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `px-2.5 py-1 rounded-lg text-xs font-black border-2 border-slate-900 transition ${
+          active ? 'bg-amber-400 text-slate-950' : 'bg-white hover:bg-slate-100 text-slate-700'
+        }`;
+        btn.textContent = active ? `✓ ${def.name}` : def.name;
+        btn.addEventListener('click', () => {
+          account.equippedStartTank = tid;
+          saveAccount();
+          refreshLobbyInventoryUI();
+          renderLobbyBanner();
+        });
+        inv.appendChild(btn);
+      });
+
+      const eqDef = TANK_CLASSES[account.equippedStartTank] || TANK_CLASSES.basic;
+      document.getElementById('equippedTankBadge').textContent = `当前出战: ${eqDef.name}`;
+      const mLabels = { normal: 'Normal 混战', mega: 'Mega 狂暴服', rvb: 'Red vs Blue', pro: 'Pro 纯竞技' };
+      const ms = document.getElementById('lobbyModeSummary');
+      if (ms) ms.textContent = mLabels[account.mode] || 'Normal 混战';
+
+      const grpBtn = document.getElementById('groupBtnLabel');
+      grpBtn.textContent = account.joinedGroup ? '✓ 已加入玩家社区 (Flame 已解锁)' : '加入玩家社区 (解锁 Flame 分支)';
+    }
+
+    function showDeathModal() {
+      document.getElementById('deathLvlStat').textContent = sessionStats.maxLvl;
+      document.getElementById('deathKillsStat').textContent = sessionStats.kills;
+      document.getElementById('deathGemsStat').textContent = `+${sessionStats.gemsEarned}`;
+      document.getElementById('deathSummaryText').textContent = '你的坦克已被击毁 • 立即复活将从等级 1 重新开始';
+      document.getElementById('deathModal').classList.remove('hidden');
+    }
+
+    // Codes Redemption Logic
+    function initCodesModal() {
+      const tagsContainer = document.getElementById('codeQuickTags');
+      tagsContainer.innerHTML = '';
+      Object.entries(ACTIVE_CODES).forEach(([code, info]) => {
+        const used = account.redeemed.includes(code);
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = `px-2 py-1 rounded-lg text-[11px] font-black border border-slate-900 ${
+          used ? 'bg-slate-200 text-slate-400 line-through' : 'bg-amber-100 hover:bg-amber-200 text-slate-900'
+        }`;
+        chip.textContent = `${code} (${info.desc})`;
+        chip.addEventListener('click', () => {
+          document.getElementById('codeInput').value = code;
+        });
+        tagsContainer.appendChild(chip);
+      });
+    }
+
+    function redeemEnteredCode() {
+      SFX.init();
+      const raw = document.getElementById('codeInput').value.trim().toUpperCase();
+      const fb = document.getElementById('codeFeedback');
+      if (!raw) {
+        fb.className = 'mt-3 text-xs font-extrabold text-rose-600';
+        fb.textContent = '请输入兑换码！';
+        return;
+      }
+      const reward = ACTIVE_CODES[raw];
+      if (!reward) {
+        fb.className = 'mt-3 text-xs font-extrabold text-rose-600';
+        fb.textContent = `❌ 无效或已过期的兑换码: ${raw}`;
+        return;
+      }
+      if (account.redeemed.includes(raw)) {
+        fb.className = 'mt-3 text-xs font-extrabold text-amber-600';
+        fb.textContent = `⚠️ 你已经兑换过 ${raw} 了！`;
+        return;
+      }
+
+      account.redeemed.push(raw);
+      if (reward.gems > 0) account.gems += reward.gems;
+      if (reward.xp > 0) {
+        if (player && gameRunning) {
+          addXp(player, reward.xp);
+        } else {
+          // Convert lobby XP code partially into bonus gems if redeemed before spawning, or apply on spawn
+          account.gems += Math.round(reward.xp / 25);
+        }
+      }
+      saveAccount();
+      SFX.play('levelup');
+      initCodesModal();
+      updateHudUI();
+      fb.className = 'mt-3 text-xs font-extrabold text-emerald-600';
+      fb.textContent = (reward.xp > 0 && (!player || !gameRunning))
+        ? `✅ 兑换成功！当前在大厅，${reward.desc} 已折算为 +${Math.round(reward.xp / 25).toLocaleString()} 💎（局内兑换可直接升满级）！`
+        : `✅ 兑换成功！获得 ${reward.desc}！`;
+    }
+
+    // Chests Roll Logic
+    function rollChest(type) {
+      SFX.init();
+      const cost = type === 'lava' ? 25000 : 5000;
+      const box = document.getElementById('chestResultBox');
+      if (account.gems < cost) {
+        box.className = 'mt-3 p-2.5 rounded-xl bg-rose-100 border border-rose-400 text-center text-xs font-black text-rose-700';
+        box.textContent = `💎 宝石不足！需要 ${cost.toLocaleString()} Gems（可点击蓝色小鸟输入 HALLOWEEN 免费领 50,000 宝石）`;
+        return;
+      }
+      account.gems -= cost;
+
+      const r = Math.random();
+      let won = 'snowflake';
+      if (type === 'lava') {
+        if (r < 0.08) won = 'supertank';
+        else if (r < 0.20) won = 'prime';
+        else if (r < 0.36) won = 'orbitron';
+        else if (r < 0.52) won = 'recursive';
+        else if (r < 0.68) won = 'ultraspiker';
+        else if (r < 0.84) won = 'delta';
+        else won = 'suppress';
+      } else {
+        if (r < 0.01) won = 'supertank';
+        else if (r < 0.03) won = 'prime';
+        else if (r < 0.07) won = 'orbitron';
+        else if (r < 0.12) won = 'recursive';
+        else if (r < 0.20) won = 'delta';
+        else if (r < 0.55) won = 'suppress';
+        else won = 'snowflake';
+      }
+
+      const def = TANK_CLASSES[won];
+      const isNew = !account.ownedTanks.includes(won);
+      if (isNew) {
+        account.ownedTanks.push(won);
+      } else {
+        const refund = Math.round(cost * 0.45);
+        account.gems += refund;
+      }
+      markTankDiscovered(won);
+      account.equippedStartTank = won;
+      if (player && gameRunning && account.mode !== 'pro') {
+        player.classId = won;
+        recalcTankStats(player, false);
+        checkPlayerEvoPrompt();
+      }
+      saveAccount();
+      SFX.play('levelup');
+      updateHudUI();
+      refreshLobbyInventoryUI();
+      renderLobbyBanner();
+
+      box.className = 'mt-3 p-2.5 rounded-xl bg-amber-100 border-2 border-slate-900 text-center text-xs font-black text-slate-900';
+      box.textContent = isNew
+        ? `🎉 恭喜抽中稀有坦克 【${def.name}】！已自动为你装备！`
+        : `✨ 抽中重复 【${def.name}】，已返还 45% 宝石并为你切换装备！`;
+    }
+
+    // Tank Index Modal Logic
+    let activeIndexFilter = 'all';
+    function renderTankIndexModal() {
+      const grid = document.getElementById('indexGrid');
+      const allClasses = Object.values(TANK_CLASSES);
+      const discoveredCount = allClasses.filter(c => account.discoveredTanks.includes(c.id)).length;
+      document.getElementById('indexProgressText').textContent = `${discoveredCount} / ${allClasses.length} 已发现`;
+      document.getElementById('indexProgressFill').style.width = `${Math.round((discoveredCount / allClasses.length) * 100)}%`;
+
+      document.querySelectorAll('.idx-filter-btn').forEach(btn => {
+        const active = btn.dataset.idxFilter === activeIndexFilter;
+        btn.classList.toggle('bg-indigo-500', active);
+        btn.classList.toggle('text-white', active);
+        btn.classList.toggle('bg-white', !active);
+        btn.classList.toggle('text-slate-800', !active);
+      });
+
+      const filtered = allClasses.filter(c => {
+        if (activeIndexFilter === 'evo') return !c.rarity;
+        if (activeIndexFilter === 'rare') return !!c.rarity;
+        return true;
+      });
+
+      grid.innerHTML = '';
+      filtered.forEach(cls => {
+        const discovered = account.discoveredTanks.includes(cls.id);
+        const owned = account.ownedTanks.includes(cls.id);
+        const card = document.createElement('div');
+        card.className = `border-2 border-slate-900 rounded-xl p-2 flex flex-col items-center text-center transition ${
+          discovered ? 'bg-slate-50' : 'bg-slate-200/80 opacity-80'
+        }`;
+
+        const badgeColor = cls.rarity === 'SECRET'
+          ? 'bg-gradient-to-r from-fuchsia-500 to-amber-400 text-slate-950'
+          : (cls.rarity === 'EXOTIC' ? 'bg-sky-300 text-slate-950' : 'bg-slate-200 text-slate-700');
+        const tierLabel = cls.rarity ? cls.rarity : `TIER ${cls.tier}`;
+
+        card.innerHTML = `
+          <div class="w-full flex items-center justify-between text-[9px] font-black mb-1">
+            <span class="px-1.5 py-0.5 rounded border border-slate-900 ${badgeColor}">${tierLabel}</span>
+            <span class="${discovered ? 'text-emerald-600' : 'text-slate-500'}">${discovered ? '✓ 已解锁' : '🔒 未发现'}</span>
+          </div>
+          <canvas width="108" height="76" class="idx-mini-canvas rounded-lg bg-white border border-slate-300 my-1"></canvas>
+          <div class="font-black text-xs text-slate-900 truncate w-full">${discovered ? cls.name : '??? 未知坦克'}</div>
+          <div class="text-[10px] font-bold text-slate-500 mt-0.5">${cls.barrels.length} 炮管${cls.orbitDrones ? ` • ${cls.orbitDrones}无人机` : ''}${cls.spikes ? ' • 尖刺' : ''}</div>
+          ${owned ? `<button type="button" data-eq="${cls.id}" class="idx-eq-btn mt-1.5 w-full rbx-btn py-0.5 rounded-lg text-[10px] font-black ${account.equippedStartTank === cls.id ? 'bg-amber-400 text-slate-950' : 'bg-white hover:bg-amber-100 text-slate-900'}">${account.equippedStartTank === cls.id ? '已装备' : '装备开局'}</button>` : ''}
+        `;
+
+        grid.appendChild(card);
+
+        // Draw crisp mini tank icon onto its card canvas
+        const mc = card.querySelector('.idx-mini-canvas');
+        const mg = mc.getContext('2d');
+        mg.fillStyle = '#f8fafc';
+        mg.fillRect(0, 0, mc.width, mc.height);
+        const mockTank = {
+          x: mc.width / 2 - 4,
+          y: mc.height / 2 + 2,
+          radius: 19,
+          color: discovered ? (cls.rarity === 'SECRET' ? '#a855f7' : (cls.rarity === 'EXOTIC' ? '#0ea5e9' : account.color)) : '#64748b',
+          classId: cls.id,
+          angle: -0.35,
+          spawnShield: 0,
+          spikeRot: 0.4
+        };
+        if (!discovered) mg.filter = 'brightness(0.35) grayscale(1)';
+        drawCartoonTank(mg, mockTank, 0.85, -0.35);
+        mg.filter = 'none';
+
+        const eqBtn = card.querySelector('.idx-eq-btn');
+        if (eqBtn) {
+          eqBtn.addEventListener('click', () => {
+            account.equippedStartTank = cls.id;
+            if (player && gameRunning && account.mode !== 'pro') {
+              player.classId = cls.id;
+              recalcTankStats(player, false);
+              checkPlayerEvoPrompt();
+              updateHudUI();
+            }
+            saveAccount();
+            refreshLobbyInventoryUI();
+            renderLobbyBanner();
+            renderTankIndexModal();
+            showToast(`✅ 已切换装备: ${cls.name}`);
+          });
+        }
+      });
+    }
+
+    // Roblox Badges Modal Logic
+    function renderBadgesModal() {
+      const ls = account.lifetimeStats;
+      document.getElementById('lifeSq').textContent = (ls.squares || 0).toLocaleString();
+      document.getElementById('lifeTri').textContent = (ls.triangles || 0).toLocaleString();
+      document.getElementById('lifePent').textContent = (ls.pentagons || 0).toLocaleString();
+      document.getElementById('lifeBoss').textContent = (ls.bosses || 0).toLocaleString();
+      document.getElementById('lifeKills').textContent = (ls.kills || 0).toLocaleString();
+
+      const list = document.getElementById('badgesList');
+      list.innerHTML = '';
+      BADGE_DEFS.forEach(b => {
+        const cur = ls[b.stat] || 0;
+        const pct = Math.min(100, Math.round((cur / b.target) * 100));
+        const unlocked = cur >= b.target;
+        const claimed = account.claimedBadges.includes(b.id);
+
+        const row = document.createElement('div');
+        row.className = `flex items-center justify-between gap-3 p-2.5 rounded-xl border-2 border-slate-900 ${
+          claimed ? 'bg-emerald-50' : (unlocked ? 'bg-amber-50' : 'bg-white')
+        }`;
+        row.innerHTML = `
+          <div class="flex items-center gap-2.5 flex-1 min-w-0">
+            <div class="w-10 h-10 rounded-full border-2 border-slate-900 flex items-center justify-center text-xl shrink-0 ${unlocked ? 'bg-amber-300' : 'bg-slate-200 grayscale'}">${b.icon}</div>
+            <div class="flex-1 min-w-0">
+              <div class="font-black text-xs sm:text-sm text-slate-900 truncate">${b.title}</div>
+              <div class="text-[11px] font-semibold text-slate-600 truncate">${b.desc}</div>
+              <div class="flex items-center gap-2 mt-1">
+                <div class="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden border border-slate-400">
+                  <div class="h-full ${unlocked ? 'bg-emerald-500' : 'bg-amber-400'}" style="width:${pct}%"></div>
+                </div>
+                <span class="text-[10px] font-black text-slate-700 shrink-0">${Math.min(cur, b.target).toLocaleString()} / ${b.target.toLocaleString()}</span>
+              </div>
+            </div>
+          </div>
+          <button type="button" class="badge-claim-btn rbx-btn px-3 py-1.5 rounded-xl font-black text-xs shrink-0 ${
+            claimed ? 'bg-emerald-200 text-emerald-900' : (unlocked ? 'bg-amber-400 hover:bg-amber-300 text-slate-950' : 'bg-slate-200 text-slate-500')
+          }" ${(!unlocked || claimed) ? 'disabled' : ''}>
+            ${claimed ? '已领取' : (unlocked ? `领取 +${b.reward.toLocaleString()}` : `${b.reward.toLocaleString()} 宝石`)}
+          </button>
+        `;
+
+        const btn = row.querySelector('.badge-claim-btn');
+        if (unlocked && !claimed) {
+          btn.addEventListener('click', () => {
+            SFX.init();
+            account.claimedBadges.push(b.id);
+            account.gems += b.reward;
+            saveAccount();
+            SFX.play('levelup');
+            updateHudUI();
+            updateBadgeDots();
+            renderBadgesModal();
+            showToast(`🎉 领取徽章奖励成功！+${b.reward.toLocaleString()} 💎`);
+          });
+        }
+        list.appendChild(row);
+      });
+    }
+
+    // Trading Plaza Booths Logic
+    function renderTradeBooths() {
+      const list = document.getElementById('tradeBoothsList');
+      const fb = document.getElementById('tradeFeedback');
+      list.innerHTML = '';
+      TRADE_BOOTHS.forEach(item => {
+        const def = TANK_CLASSES[item.id];
+        const owned = account.ownedTanks.includes(item.id);
+        const row = document.createElement('div');
+        row.className = 'flex items-center justify-between gap-2 p-2.5 rounded-xl border-2 border-slate-900 bg-slate-50';
+        row.innerHTML = `
+          <div>
+            <div class="font-black text-xs sm:text-sm text-slate-900">${def.name}</div>
+            <div class="text-[10px] font-bold text-slate-500">摊主: @${item.seller} • ${item.tag}</div>
+          </div>
+          <button type="button" class="trade-buy-btn rbx-btn px-3 py-1.5 rounded-xl font-black text-xs ${
+            owned ? 'bg-emerald-200 text-emerald-900' : 'bg-amber-400 hover:bg-amber-300 text-slate-950'
+          }">${owned ? '已拥有 (装备)' : `${item.price.toLocaleString()} 宝石`}</button>
+        `;
+        row.querySelector('.trade-buy-btn').addEventListener('click', () => {
+          SFX.init();
+          if (owned) {
+            account.equippedStartTank = item.id;
+            saveAccount();
+            refreshLobbyInventoryUI();
+            renderLobbyBanner();
+            fb.textContent = `✅ 已装备 ${def.name}！`;
+            return;
+          }
+          if (account.gems < item.price) {
+            fb.className = 'mt-2.5 text-xs font-extrabold text-rose-600 min-h-[1.25rem]';
+            fb.textContent = `❌ 宝石不足！还需要 ${(item.price - account.gems).toLocaleString()} Gems。`;
+            return;
+          }
+          account.gems -= item.price;
+          account.ownedTanks.push(item.id);
+          markTankDiscovered(item.id);
+          account.equippedStartTank = item.id;
+          saveAccount();
+          SFX.play('levelup');
+          updateHudUI();
+          refreshLobbyInventoryUI();
+          renderLobbyBanner();
+          renderTradeBooths();
+          fb.className = 'mt-2.5 text-xs font-extrabold text-emerald-600 min-h-[1.25rem]';
+          fb.textContent = `🤝 交易成功！已购入并装备 ${def.name}！`;
+        });
+        list.appendChild(row);
+      });
+    }
+
+    // =========================================================================
+    // 11. EVENT LISTENERS (Keyboard, Mouse, Dual Touch Sticks & Buttons)
+    // =========================================================================
+    window.addEventListener('keydown', (e) => {
+      input.keys[e.code] = true;
+      if (document.activeElement && document.activeElement.tagName === 'INPUT') return;
+      if (e.code === 'KeyE') {
+        autoFire = !autoFire;
+        syncAutoFireBtn();
+        showToast(autoFire ? '🔄 自动开火: 已开启' : '⏹️ 自动开火: 已关闭');
+      }
+      if (e.code >= 'Digit1' && e.code <= 'Digit8') {
+        const idx = parseInt(e.code.replace('Digit', ''), 10) - 1;
+        if (STAT_DEFS[idx]) upgradePlayerStat(STAT_DEFS[idx].key);
+      }
+    });
+
+    window.addEventListener('keyup', (e) => {
+      input.keys[e.code] = false;
+    });
+
+    canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+
+    canvas.addEventListener('mousemove', (e) => {
+      touchOrbitMode = false;
+      input.mouseX = e.clientX;
+      input.mouseY = e.clientY;
+      if (input.camDrag.active && input.camDrag.isMouse) {
+        const dx = e.clientX - input.camDrag.lastX;
+        const dy = e.clientY - input.camDrag.lastY;
+        input.camDrag.lastX = e.clientX;
+        input.camDrag.lastY = e.clientY;
+        camTargetYaw -= dx * 0.0075;
+        camTargetPitch = Math.max(0.24, Math.min(1.38, camTargetPitch + dy * 0.0055));
+      }
+    });
+    canvas.addEventListener('mousedown', (e) => {
+      SFX.init();
+      touchOrbitMode = false;
+      if (hudMenuOpen) {
+        hudMenuOpen = false;
+        document.getElementById('hudMenuDropdown').classList.add('hidden');
+      }
+      if (e.button === 0) {
+        input.mouseDown = true;
+      } else if (e.button === 2 || e.button === 1) {
+        input.camDrag.active = true;
+        input.camDrag.isMouse = true;
+        input.camDrag.lastX = e.clientX;
+        input.camDrag.lastY = e.clientY;
+      }
+    });
+    window.addEventListener('mouseup', (e) => {
+      if (e.button === 0) input.mouseDown = false;
+      if (e.button === 2 || e.button === 1) {
+        input.camDrag.active = false;
+        input.camDrag.isMouse = false;
+      }
+    });
+
+    canvas.addEventListener('wheel', (e) => {
+      if (!gameRunning) return;
+      e.preventDefault();
+      camDistScale = Math.max(0.62, Math.min(1.85, camDistScale + e.deltaY * 0.0008));
+    }, { passive: false });
+
+    // Mobile Touch Controls: Left Half = Camera-Relative Move Joystick | Right Half = Free 360° 3D Camera Orbit Drag
+    canvas.addEventListener('touchstart', (e) => {
+      SFX.init();
+      touchOrbitMode = true;
+      if (hudMenuOpen) {
+        hudMenuOpen = false;
+        document.getElementById('hudMenuDropdown').classList.add('hidden');
+      }
+      e.preventDefault();
+      for (const touch of e.changedTouches) {
+        if (touch.clientX < window.innerWidth * 0.45 && !input.moveStick.active) {
+          input.moveStick.active = true;
+          input.moveStick.id = touch.identifier;
+          input.moveStick.startX = touch.clientX;
+          input.moveStick.startY = touch.clientY;
+          input.moveStick.dx = 0;
+          input.moveStick.dy = 0;
+        } else if (!input.camDrag.active) {
+          input.camDrag.active = true;
+          input.camDrag.isMouse = false;
+          input.camDrag.id = touch.identifier;
+          input.camDrag.lastX = touch.clientX;
+          input.camDrag.lastY = touch.clientY;
+        }
+      }
+    }, { passive: false });
+
+    canvas.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      for (const touch of e.changedTouches) {
+        if (input.moveStick.active && input.moveStick.id === touch.identifier) {
+          const rx = (touch.clientX - input.moveStick.startX) / 46;
+          const ry = (touch.clientY - input.moveStick.startY) / 46;
+          const len = Math.hypot(rx, ry);
+          input.moveStick.dx = len > 1 ? rx / len : rx;
+          input.moveStick.dy = len > 1 ? ry / len : ry;
+        } else if (input.camDrag.active && !input.camDrag.isMouse && input.camDrag.id === touch.identifier) {
+          const dx = touch.clientX - input.camDrag.lastX;
+          const dy = touch.clientY - input.camDrag.lastY;
+          input.camDrag.lastX = touch.clientX;
+          input.camDrag.lastY = touch.clientY;
+          camTargetYaw -= dx * 0.0085;
+          camTargetPitch = Math.max(0.24, Math.min(1.38, camTargetPitch + dy * 0.0055));
+        }
+      }
+    }, { passive: false });
+
+    const endTouch = (e) => {
+      for (const touch of e.changedTouches) {
+        if (input.moveStick.active && input.moveStick.id === touch.identifier) input.moveStick.active = false;
+        if (input.camDrag.active && !input.camDrag.isMouse && input.camDrag.id === touch.identifier) input.camDrag.active = false;
+      }
+    };
+    canvas.addEventListener('touchend', endTouch);
+    canvas.addEventListener('touchcancel', endTouch);
+
+    // UI Buttons Wiring
+    function wireUI() {
+      buildStatsRows();
+      initCodesModal();
+      refreshLobbyInventoryUI();
+
+      const nameInput = document.getElementById('playerNameInput');
+      nameInput.value = account.name;
+      nameInput.addEventListener('input', () => {
+        account.name = nameInput.value.trim() || 'TankPlayer';
+        saveAccount();
+        updateHudUI();
+      });
+
+      // Swatches
+      document.querySelectorAll('.swatch-btn').forEach(btn => {
+        if (btn.dataset.color === account.color) {
+          btn.classList.add('ring-2', 'ring-offset-1', 'ring-slate-900');
+        } else {
+          btn.classList.remove('ring-2', 'ring-offset-1', 'ring-slate-900');
+        }
+        btn.addEventListener('click', () => {
+          account.color = btn.dataset.color;
+          saveAccount();
+          document.querySelectorAll('.swatch-btn').forEach(b => b.classList.remove('ring-2', 'ring-offset-1', 'ring-slate-900'));
+          btn.classList.add('ring-2', 'ring-offset-1', 'ring-slate-900');
+          renderLobbyBanner();
+        });
+      });
+
+      // Gamemode selector
+      const refreshModeCards = () => {
+        document.querySelectorAll('.mode-card').forEach(card => {
+          const active = card.dataset.mode === account.mode;
+          card.classList.toggle('bg-amber-300', active);
+          card.classList.toggle('bg-white', !active);
+        });
+      };
+      refreshModeCards();
+      document.querySelectorAll('.mode-card').forEach(card => {
+        card.addEventListener('click', () => {
+          account.mode = card.dataset.mode;
+          saveAccount();
+          refreshModeCards();
+        });
+      });
+
+      // Join 7x3 Group
+      document.getElementById('btnJoinGroup').addEventListener('click', () => {
+        SFX.init();
+        if (!account.joinedGroup) {
+          account.joinedGroup = true;
+          account.gems += 2500;
+          saveAccount();
+          SFX.play('levelup');
+          refreshLobbyInventoryUI();
+          updateHudUI();
+          showToast('🎉 已加入玩家社区！解锁 Flame 烈焰坦克 & 赠送 +2,500 💎！');
+        } else {
+          showToast('✓ 你已经是社区成员，Lv.10 可随时进化 Flame 坦克！');
+        }
+      });
+
+      document.getElementById('btnPlay').addEventListener('click', () => startArena(false));
+      document.getElementById('btnRespawn').addEventListener('click', () => startArena(false));
+      document.getElementById('btnBackLobbyFromDeath').addEventListener('click', () => {
+        document.getElementById('deathModal').classList.add('hidden');
+        document.getElementById('hudLayer').classList.add('hidden');
+        document.getElementById('lobbyModal').classList.remove('hidden');
+        refreshLobbyInventoryUI();
+        renderLobbyBanner();
+      });
+
+      document.getElementById('btnLobby').addEventListener('click', () => {
+        hudMenuOpen = false;
+        document.getElementById('hudMenuDropdown').classList.add('hidden');
+        gameRunning = false;
+        document.getElementById('hudLayer').classList.add('hidden');
+        document.getElementById('lobbyModal').classList.remove('hidden');
+        refreshLobbyInventoryUI();
+        renderLobbyBanner();
+      });
+
+      document.getElementById('btnHudMenu').addEventListener('click', () => {
+        hudMenuOpen = !hudMenuOpen;
+        document.getElementById('hudMenuDropdown').classList.toggle('hidden', !hudMenuOpen);
+      });
+
+      const closeHudMenu = () => {
+        hudMenuOpen = false;
+        document.getElementById('hudMenuDropdown').classList.add('hidden');
+      };
+
+      document.getElementById('btnToggleLb').addEventListener('click', () => {
+        lbOpen = !lbOpen;
+        document.getElementById('leaderboardCard').classList.toggle('hidden', !lbOpen);
+      });
+
+      const toggleStatsPanel = () => {
+        statsDrawerOpen = !statsDrawerOpen;
+        document.getElementById('statsDrawer').classList.toggle('hidden', !statsDrawerOpen);
+        if (statsDrawerOpen) document.getElementById('evoPanel').classList.add('hidden');
+        updateHudUI();
+      };
+      document.getElementById('btnToggleStats').addEventListener('click', toggleStatsPanel);
+      document.getElementById('btnRightLevel').addEventListener('click', toggleStatsPanel);
+      document.getElementById('btnToggleEvo').addEventListener('click', () => {
+        const evoP = document.getElementById('evoPanel');
+        if (evoP.classList.contains('hidden')) {
+          checkPlayerEvoPrompt();
+          if (evoP.classList.contains('hidden')) {
+            showToast('达到 10 / 25 / 45 / 75 级即可解锁新坦克进化分支');
+          } else {
+            statsDrawerOpen = false;
+            document.getElementById('statsDrawer').classList.add('hidden');
+          }
+        } else {
+          evoP.classList.add('hidden');
+        }
+      });
+
+      document.getElementById('btnCloseStats').addEventListener('click', () => {
+        statsDrawerOpen = false;
+        document.getElementById('statsDrawer').classList.add('hidden');
+        updateHudUI();
+      });
+
+      document.getElementById('btnSound').addEventListener('click', () => {
+        SFX.init();
+        SFX.muted = !SFX.muted;
+        document.getElementById('btnSound').textContent = SFX.muted ? '音效: 关' : '音效: 开';
+      });
+
+      window.syncAutoFireBtn = () => {
+        const afBtn = document.getElementById('btnAutoFire');
+        afBtn.classList.toggle('bg-emerald-500/75', autoFire);
+        afBtn.classList.toggle('bg-slate-700/40', !autoFire);
+      };
+
+      document.getElementById('btnAutoFire').addEventListener('click', () => {
+        autoFire = !autoFire;
+        syncAutoFireBtn();
+        showToast(autoFire ? '🔄 自动开火: 已开启' : '⏹️ 自动开火: 已关闭');
+      });
+
+      // 180° Instant Rear Flip Button
+      document.getElementById('btnFlip180').addEventListener('click', () => {
+        camTargetYaw += Math.PI;
+        showToast('🔄 视角已快速旋转 180°');
+      });
+
+      // Camera Pitch Toggle (3D Horizon vs Top-Down)
+      document.getElementById('btnCamToggle').addEventListener('click', () => {
+        lowAngleCam = !lowAngleCam;
+        camTargetPitch = lowAngleCam ? 0.56 : 1.24;
+        document.getElementById('btnCamToggle').textContent = lowAngleCam ? '3D' : '俯视';
+        showToast(lowAngleCam ? '🎥 已切换为 Roblox 原版 3D 斜平视视角' : '🎥 已切换为经典高空俯视视角');
+      });
+
+      // Burst Fire Hold Button
+      const burstBtn = document.getElementById('btnBurstFire');
+      burstBtn.addEventListener('pointerdown', (ev) => {
+        ev.preventDefault();
+        SFX.init();
+        burstHolding = true;
+      });
+      window.addEventListener('pointerup', () => { burstHolding = false; });
+
+      // Left Dock Trading Button & Right Dock Quick Gems / XP Boost
+      document.getElementById('btnHudTrade').addEventListener('click', () => {
+        closeHudMenu();
+        renderTradeBooths();
+        document.getElementById('tradeModal').classList.remove('hidden');
+      });
+      document.getElementById('btnGemPlus').addEventListener('click', () => {
+        closeHudMenu();
+        initCodesModal();
+        document.getElementById('codesModal').classList.remove('hidden');
+      });
+      document.getElementById('btnQuickXpBoost').addEventListener('click', () => {
+        SFX.init();
+        if (!account.redeemed.includes('HUGEREBALANCE')) {
+          account.redeemed.push('HUGEREBALANCE');
+          if (player && gameRunning) addXp(player, 500000);
+          saveAccount();
+          SFX.play('levelup');
+          updateHudUI();
+          showToast('⭐ 已一键激活 HUGEREBALANCE 礼包：+500,000 XP！');
+        } else {
+          initCodesModal();
+          document.getElementById('codesModal').classList.remove('hidden');
+        }
+      });
+
+      document.getElementById('btnShake').addEventListener('click', () => {
+        screenShakeEnabled = !screenShakeEnabled;
+        const btn = document.getElementById('btnShake');
+        btn.textContent = `震动: ${screenShakeEnabled ? '开' : '关'}`;
+        btn.classList.toggle('bg-amber-200', screenShakeEnabled);
+        btn.classList.toggle('bg-slate-200', !screenShakeEnabled);
+      });
+
+      // Modals Open/Close
+      const openCodes = () => { closeHudMenu(); initCodesModal(); document.getElementById('codesModal').classList.remove('hidden'); };
+      document.getElementById('btnCodes').addEventListener('click', openCodes);
+      document.getElementById('btnLobbyCodes').addEventListener('click', openCodes);
+      document.getElementById('btnCloseCodes').addEventListener('click', () => document.getElementById('codesModal').classList.add('hidden'));
+      document.getElementById('btnRedeemCode').addEventListener('click', redeemEnteredCode);
+
+      const openChests = () => {
+        closeHudMenu();
+        document.getElementById('chestGemsCount').textContent = account.gems.toLocaleString();
+        document.getElementById('chestsModal').classList.remove('hidden');
+      };
+      document.getElementById('btnChests').addEventListener('click', openChests);
+      document.getElementById('btnLobbyChests').addEventListener('click', openChests);
+      document.getElementById('btnCloseChests').addEventListener('click', () => document.getElementById('chestsModal').classList.add('hidden'));
+      document.getElementById('btnBuyFrozen').addEventListener('click', () => rollChest('frozen'));
+      document.getElementById('btnBuyLava').addEventListener('click', () => rollChest('lava'));
+
+      document.getElementById('btnLobbyTrade').addEventListener('click', () => {
+        renderTradeBooths();
+        document.getElementById('tradeModal').classList.remove('hidden');
+      });
+
+      // Remastered Main Menu Modal Open/Close Wiring
+      document.getElementById('btnOpenModeModal').addEventListener('click', () => {
+        document.getElementById('modeModal').classList.remove('hidden');
+      });
+      document.getElementById('btnCloseMode').addEventListener('click', () => {
+        document.getElementById('modeModal').classList.add('hidden');
+      });
+      document.querySelectorAll('.mode-card').forEach(card => {
+        card.addEventListener('click', () => {
+          refreshLobbyInventoryUI();
+          document.getElementById('modeModal').classList.add('hidden');
+        });
+      });
+
+      const openGarage = () => {
+        refreshLobbyInventoryUI();
+        document.getElementById('garageModal').classList.remove('hidden');
+      };
+      document.getElementById('btnOpenGarage').addEventListener('click', openGarage);
+      document.getElementById('btnLobbyProfile').addEventListener('click', openGarage);
+      document.getElementById('btnCloseGarage').addEventListener('click', () => {
+        updateHudUI();
+        document.getElementById('garageModal').classList.add('hidden');
+      });
+
+      document.getElementById('btnLobbyGems').addEventListener('click', openCodes);
+
+      const syncSettingsModalBtns = () => {
+        document.getElementById('btnSetSound').textContent = SFX.muted ? '音效: 关' : '音效: 开';
+        document.getElementById('btnSetShake').textContent = screenShakeEnabled ? '击杀镜头震动: 开' : '击杀镜头震动: 关';
+        document.getElementById('btnSetAutoFire').textContent = autoFire ? '默认自动开火: 开' : '默认自动开火: 关';
+      };
+      document.getElementById('btnLobbySettings').addEventListener('click', () => {
+        syncSettingsModalBtns();
+        document.getElementById('settingsModal').classList.remove('hidden');
+      });
+      document.getElementById('btnCloseSettings').addEventListener('click', () => {
+        document.getElementById('settingsModal').classList.add('hidden');
+      });
+      document.getElementById('btnSetSound').addEventListener('click', () => {
+        document.getElementById('btnSound').click();
+        syncSettingsModalBtns();
+      });
+      document.getElementById('btnSetShake').addEventListener('click', () => {
+        document.getElementById('btnShake').click();
+        syncSettingsModalBtns();
+      });
+      document.getElementById('btnSetAutoFire').addEventListener('click', () => {
+        document.getElementById('btnAutoFire').click();
+        syncSettingsModalBtns();
+      });
+      document.getElementById('btnCloseTrade').addEventListener('click', () => document.getElementById('tradeModal').classList.add('hidden'));
+
+      // Tank Index Modal Wiring
+      const openIndex = () => {
+        closeHudMenu();
+        renderTankIndexModal();
+        document.getElementById('indexModal').classList.remove('hidden');
+      };
+      document.getElementById('btnIndex').addEventListener('click', openIndex);
+      document.getElementById('btnLobbyIndex').addEventListener('click', openIndex);
+      document.getElementById('btnCloseIndex').addEventListener('click', () => document.getElementById('indexModal').classList.add('hidden'));
+      document.querySelectorAll('.idx-filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          activeIndexFilter = btn.dataset.idxFilter;
+          renderTankIndexModal();
+        });
+      });
+
+      // Badges Modal Wiring
+      const openBadges = () => {
+        closeHudMenu();
+        renderBadgesModal();
+        document.getElementById('badgesModal').classList.remove('hidden');
+      };
+      document.getElementById('btnBadges').addEventListener('click', openBadges);
+      document.getElementById('btnLobbyBadges').addEventListener('click', openBadges);
+      document.getElementById('btnCloseBadges').addEventListener('click', () => document.getElementById('badgesModal').classList.add('hidden'));
+
+      updateBadgeDots();
+    }
+
+    // =========================================================================
+    // 12. MAIN GAME LOOP
+    // =========================================================================
+    let uiTick = 0;
+    function loop(ts) {
+      const dt = Math.min(0.05, (ts - lastTime) / 1000 || 0.016);
+      lastTime = ts;
+
+      if (gameRunning) {
+        updateSimulation(dt);
+        uiTick += dt;
+        if (uiTick >= 0.25) {
+          uiTick = 0;
+          updateHudUI();
+          updateLeaderboardUI();
+        }
+      }
+      renderArena();
+      requestAnimationFrame(loop);
+    }
+
+    window.onload = () => {
+      // Seed background preview world for lobby backdrop
+      for (let i = 0; i < 65; i++) spawnFoodItem(i < 10);
+      wireUI();
+      updateHudUI();
+      renderLobbyBanner();
+      lastTime = performance.now();
+      requestAnimationFrame(loop);
+    };
+  </script>
+</body>
+</html>
